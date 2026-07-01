@@ -1012,9 +1012,37 @@ function drawPromoFooter(pdf, promoImage) {
   }
 }
 
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+
+    registration.update().catch(() => {});
+
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (!newWorker) return;
+
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloaded) return;
+      reloaded = true;
+      window.location.reload();
+    });
+  } catch (error) {
+    console.warn('Não foi possível registrar o service worker.', error);
   }
 }
 

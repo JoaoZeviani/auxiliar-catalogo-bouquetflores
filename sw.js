@@ -1,30 +1,51 @@
-const CACHE_NAME = 'auxiliar-catalogos-v1';
-const APP_SHELL = [
-  './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './supabase-config.js',
-  './manifest.json',
-  './assets/icon-192.png',
-  './assets/icon-512.png'
-];
+const CACHE_NAME = 'auxiliar-catalogos-runtime-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+    caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => cached))
-  );
+
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  event.respondWith(networkFirst(event.request));
 });
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const freshResponse = await fetch(request, { cache: 'no-store' });
+
+    if (freshResponse && freshResponse.ok) {
+      cache.put(request, freshResponse.clone()).catch(() => {});
+    }
+
+    return freshResponse;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) return cachedResponse;
+
+    if (request.mode === 'navigate') {
+      const cachedHome = await cache.match('./index.html');
+      if (cachedHome) return cachedHome;
+    }
+
+    throw error;
+  }
+}
