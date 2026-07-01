@@ -713,7 +713,6 @@ function renderAssetPreviews() {
   renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé');
 }
 function renderBranding() {
-  const logoUrl = state.assets.logoUrl || '';
   const targets = [
     { id: 'loginBrandMark' },
     { id: 'sidebarLogoMark' }
@@ -724,12 +723,7 @@ function renderBranding() {
     if (!el) return;
 
     el.classList.add('has-logo', 'app-icon-mark');
-
-    if (logoUrl) {
-      el.innerHTML = `<img src="${escapeHtml(logoUrl)}" alt="Logotipo da floricultura">`;
-    } else {
-      el.innerHTML = `<img src="${APP_ICON_URL}" alt="Ícone do Auxiliar de Catálogos">`;
-    }
+    el.innerHTML = `<img src="${APP_ICON_URL}" alt="Ícone do Auxiliar de Catálogos">`;
   });
 }
 
