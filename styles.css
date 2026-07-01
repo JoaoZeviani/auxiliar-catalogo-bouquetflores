@@ -381,3 +381,6 @@ button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; 
   display: block !important;
   flex: 0 0 auto;
 }
+
+/* Cores removidas da interface: as paletas agora acompanham automaticamente o fundo selecionado. */
+.colors { display: none !important; }

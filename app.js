@@ -48,14 +48,34 @@ const CATALOG_BACKGROUND_PRESETS = {
   preset_4: './assets/fundos-catalogo/fundo_catalogo_04.jpg',
   preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg'
 };
-
+const CATALOG_BACKGROUND_PALETTES = {
+  preset_1: { primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#b98b50', pdfPageColor: '#f6f0e7', pdfCardColor: '#fffaf2', pdfCardBorderColor: '#d8c7ad', pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#9d6d32', promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff' },
+  preset_2: { primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#a98756', pdfPageColor: '#f3f1ea', pdfCardColor: '#fffdf6', pdfCardBorderColor: '#c9d2c5', pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#8a6a3c', promoBackgroundColor: '#60766a', promoTextColor: '#ffffff' },
+  preset_3: { primaryColor: '#74614f', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570', pdfPageColor: '#faf1ed', pdfCardColor: '#fff9f6', pdfCardBorderColor: '#e2c3bb', pdfTextColor: '#352b25', pdfMutedTextColor: '#7a6c63', pdfPriceColor: '#a65f5b', promoBackgroundColor: '#74614f', promoTextColor: '#ffffff' },
+  preset_4: { primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#87945d', pdfPageColor: '#eff4ed', pdfCardColor: '#fbfff8', pdfCardBorderColor: '#c8d6c3', pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#6f7f43', promoBackgroundColor: '#597061', promoTextColor: '#ffffff' },
+  preset_5: { primaryColor: '#546875', secondaryColor: '#b7c2c8', backgroundColor: '#eef2f2', accentColor: '#8b8b60', pdfPageColor: '#eef2f2', pdfCardColor: '#fbfdfc', pdfCardBorderColor: '#c6d0d4', pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#747344', promoBackgroundColor: '#546875', promoTextColor: '#ffffff' }
+};
+function normalizeCatalogBackgroundMode(mode) {
+  return CATALOG_BACKGROUND_PRESETS[mode] ? mode : 'preset_1';
+}
+function paletteForCatalogMode(mode) {
+  const safeMode = normalizeCatalogBackgroundMode(mode || DEFAULT_SETTINGS.catalogBackgroundMode);
+  return CATALOG_BACKGROUND_PALETTES[safeMode] || CATALOG_BACKGROUND_PALETTES.preset_1;
+}
+function activeCatalogPalette() {
+  const mode = normalizeCatalogBackgroundMode((state && state.settings && state.settings.catalogBackgroundMode) || DEFAULT_SETTINGS.catalogBackgroundMode);
+  return paletteForCatalogMode(mode);
+}
+function applyCatalogPaletteToSettings(settings) {
+  const safeSettings = settings || {};
+  const mode = normalizeCatalogBackgroundMode(safeSettings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
+  const palette = paletteForCatalogMode(mode);
+  return { ...safeSettings, catalogBackgroundMode: mode, ...palette };
+}
 function selectedCatalogBackgroundUrl() {
-  const mode = state.settings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode;
-  if (mode === 'none') return '';
-  if (mode === 'custom') return state.assets.catalogBackgroundUrl || CATALOG_BACKGROUND_PRESETS.preset_1;
+  const mode = normalizeCatalogBackgroundMode((state && state.settings && state.settings.catalogBackgroundMode) || DEFAULT_SETTINGS.catalogBackgroundMode);
   return CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
 }
-
 const state = {
   products: [],
   categories: [],
@@ -154,12 +174,12 @@ function sanitizeFileName(name = 'imagem') {
 }
 
 function setThemeVariables() {
-  document.documentElement.style.setProperty('--primary', state.settings.primaryColor || DEFAULT_SETTINGS.primaryColor);
-  document.documentElement.style.setProperty('--secondary', state.settings.secondaryColor || DEFAULT_SETTINGS.secondaryColor);
-  document.documentElement.style.setProperty('--background', state.settings.backgroundColor || DEFAULT_SETTINGS.backgroundColor);
-  document.documentElement.style.setProperty('--accent', state.settings.accentColor || DEFAULT_SETTINGS.accentColor);
+  const palette = activeCatalogPalette();
+  document.documentElement.style.setProperty('--primary', palette.primaryColor);
+  document.documentElement.style.setProperty('--secondary', palette.secondaryColor);
+  document.documentElement.style.setProperty('--background', palette.backgroundColor);
+  document.documentElement.style.setProperty('--accent', palette.accentColor);
 }
-
 function bindNavigation() {
   document.querySelectorAll('.tabs button').forEach((btn) => {
     btn.addEventListener('click', () => openTab(btn.dataset.tab));
@@ -289,10 +309,10 @@ async function loadSettings() {
   if (error) throw error;
   if (!data) {
     await supabase.from('configuracoes').upsert({ id: 'visual', dados: DEFAULT_SETTINGS, atualizado_em: nowIso() });
-    state.settings = { ...DEFAULT_SETTINGS };
+    state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS });
     return;
   }
-  state.settings = { ...DEFAULT_SETTINGS, ...(data.dados || {}) };
+  state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...(data.dados || {}) });
 }
 
 function normalizeAssets(raw = {}) {
@@ -661,42 +681,25 @@ function bindAssetsUi() {
     ['whatsappIconInput', 'whatsappIconUrl', 'whatsappIconPath', 'icone-whatsapp'],
     ['deliveryIconInput', 'deliveryIconUrl', 'deliveryIconPath', 'icone-entrega'],
     ['locationIconInput', 'locationIconUrl', 'locationIconPath', 'icone-local'],
-    ['promoImageInput', 'promoImageUrl', 'promoImagePath', 'rodape-promocional'], ['catalogBackgroundInput', 'catalogBackgroundUrl', 'catalogBackgroundPath', 'fundo-catalogo']
+    ['promoImageInput', 'promoImageUrl', 'promoImagePath', 'rodape-promocional']
   ];
   map.forEach(([inputId, urlKey, pathKey, folder]) => {
-    $(inputId).addEventListener('change', async () => {
-      const file = $(inputId).files[0];
+    const input = $(inputId);
+    if (!input) return;
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
       if (!file) return;
       try {
-        const uploaded = await uploadImage(file, `assets/${folder}`);
+        const uploaded = await uploadImage(file, 'assets/' + folder);
         const previousPath = state.assets[pathKey];
-        const nextAssets = {
-          ...state.assets,
-          [urlKey]: uploaded.url,
-          [pathKey]: uploaded.path
-        };
-        const { error } = await supabase.from('configuracoes').upsert({
-          id: 'assets',
-          dados: nextAssets,
-          atualizado_em: nowIso()
-        });
+        const nextAssets = { ...state.assets, [urlKey]: uploaded.url, [pathKey]: uploaded.path };
+        const { error } = await supabase.from('configuracoes').upsert({ id: 'assets', dados: nextAssets, atualizado_em: nowIso() });
         if (error) throw error;
         state.assets = nextAssets;
-        if (inputId === 'catalogBackgroundInput') {
-          const nextSettings = { ...state.settings, catalogBackgroundMode: 'custom' };
-          const { error: settingsError } = await supabase.from('configuracoes').upsert({
-            id: 'visual',
-            dados: nextSettings,
-            atualizado_em: nowIso()
-          });
-          if (settingsError) throw settingsError;
-          state.settings = nextSettings;
-          if ($('catalogBackgroundMode')) $('catalogBackgroundMode').value = 'custom';
-        }
         await deleteStoragePath(previousPath);
         renderAssetPreviews();
         refreshStorageEstimate();
-        $(inputId).value = '';
+        input.value = '';
         toast('Imagem fixa atualizada.');
       } catch (error) {
         console.error(error);
@@ -705,7 +708,6 @@ function bindAssetsUi() {
     });
   });
 }
-
 function renderAssetPreviews() {
   renderBranding();
   renderAssetPreview('logoPreview', state.assets.logoUrl, 'Nenhum logotipo');
@@ -714,9 +716,8 @@ function renderAssetPreviews() {
   renderAssetPreview('whatsappIconPreview', state.assets.whatsappIconUrl, 'Nenhum ícone de WhatsApp');
   renderAssetPreview('deliveryIconPreview', state.assets.deliveryIconUrl, 'Nenhum ícone de entrega');
   renderAssetPreview('locationIconPreview', state.assets.locationIconUrl, 'Nenhum ícone de local');
-  renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé'); renderAssetPreview('catalogBackgroundPreview', state.assets.catalogBackgroundUrl, 'Nenhum fundo personalizado');
+  renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé');
 }
-
 function renderBranding() {
   const logoUrl = state.assets.logoUrl || '';
   const targets = [
@@ -738,33 +739,42 @@ function renderBranding() {
 }
 
 function renderAssetPreview(id, url, emptyText) {
-  $(id).innerHTML = url ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(emptyText)}">` : emptyText;
+  const target = $(id);
+  if (!target) return;
+  target.innerHTML = url ? '<img src="' + escapeHtml(url) + '" alt="" />' : emptyText;
 }
-
+function settingInputValue(id, fallback) {
+  const el = $(id);
+  if (!el) return fallback;
+  if (el.type === 'checkbox') return !!el.checked;
+  return String(el.value ?? fallback ?? '').trim();
+}
+function setExistingInputValue(id, value) {
+  const el = $(id);
+  if (!el) return;
+  if (el.type === 'checkbox') el.checked = !!value;
+  else el.value = value ?? '';
+}
 function collectSettingsPayload() {
+  const catalogBackgroundMode = normalizeCatalogBackgroundMode(settingInputValue('catalogBackgroundMode', DEFAULT_SETTINGS.catalogBackgroundMode));
+  const palette = paletteForCatalogMode(catalogBackgroundMode);
   return {
-    businessName: $('businessName').value.trim(),
-    catalogTitle: $('catalogTitle').value.trim(), catalogSubtitle: $('catalogSubtitle').value.trim(),
-    businessPhone: $('businessPhone').value.trim(),
-    businessAddress: $('businessAddress').value.trim(),
-    deliveryFee: $('deliveryFee').value.trim(),
-    titleFont: $('titleFont').value,
-    bodyFont: $('bodyFont').value,
-    priceFont: $('priceFont').value,
-    primaryColor: $('primaryColor').value,
-    secondaryColor: $('secondaryColor').value,
-    backgroundColor: $('backgroundColor').value,
-    accentColor: $('accentColor').value,
-    pdfPageColor: $('pdfPageColor').value,
-    pdfCardColor: $('pdfCardColor').value,
-    pdfTextColor: $('pdfTextColor').value,
-    promoBackgroundColor: $('promoBackgroundColor').value,
-    catalogBackgroundMode: $('catalogBackgroundMode').value, promoFooter: $('promoFooter').value.trim(),
-    hideUnavailablePdf: $('hideUnavailablePdf').checked,
-    showPromoFooter: $('showPromoFooter').checked
+    businessName: settingInputValue('businessName', DEFAULT_SETTINGS.businessName),
+    catalogTitle: settingInputValue('catalogTitle', DEFAULT_SETTINGS.catalogTitle),
+    catalogSubtitle: settingInputValue('catalogSubtitle', DEFAULT_SETTINGS.catalogSubtitle),
+    businessPhone: settingInputValue('businessPhone', DEFAULT_SETTINGS.businessPhone),
+    businessAddress: settingInputValue('businessAddress', DEFAULT_SETTINGS.businessAddress),
+    deliveryFee: settingInputValue('deliveryFee', DEFAULT_SETTINGS.deliveryFee),
+    titleFont: settingInputValue('titleFont', DEFAULT_SETTINGS.titleFont),
+    bodyFont: settingInputValue('bodyFont', DEFAULT_SETTINGS.bodyFont),
+    priceFont: settingInputValue('priceFont', DEFAULT_SETTINGS.priceFont),
+    ...palette,
+    catalogBackgroundMode,
+    promoFooter: settingInputValue('promoFooter', DEFAULT_SETTINGS.promoFooter),
+    hideUnavailablePdf: settingInputValue('hideUnavailablePdf', DEFAULT_SETTINGS.hideUnavailablePdf),
+    showPromoFooter: settingInputValue('showPromoFooter', DEFAULT_SETTINGS.showPromoFooter)
   };
 }
-
 let settingsAutoSaveTimer = null;
 async function saveSettingsAutomatically() {
   if (!state.supabaseReady) return;
@@ -797,53 +807,43 @@ function scheduleSettingsAutoSave() {
 function bindSettingsUi() {
   const fields = [
     'businessName', 'catalogTitle', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
-    'titleFont', 'bodyFont', 'priceFont',
-    'primaryColor', 'secondaryColor', 'backgroundColor', 'accentColor',
-    'pdfPageColor', 'pdfCardColor', 'pdfTextColor', 'promoBackgroundColor', 'catalogBackgroundMode', 'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
+    'titleFont', 'bodyFont', 'priceFont', 'catalogBackgroundMode', 'promoFooter',
+    'hideUnavailablePdf', 'showPromoFooter'
   ];
-
   fields.forEach((id) => {
     const el = $(id);
     if (!el) return;
     const eventName = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(eventName, () => {
       if (id === 'titleFont' || id === 'bodyFont' || id === 'priceFont') updateFontSamples();
+      if (id === 'catalogBackgroundMode') {
+        state.settings = applyCatalogPaletteToSettings({ ...state.settings, catalogBackgroundMode: normalizeCatalogBackgroundMode(el.value) });
+        setThemeVariables();
+      }
       scheduleSettingsAutoSave();
     });
   });
-
-  $('settingsForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    saveSettingsAutomatically();
-  });
-
+  const form = $('settingsForm');
+  if (form) form.addEventListener('submit', (event) => { event.preventDefault(); saveSettingsAutomatically(); });
   updateFontSamples();
 }
-
 function fillSettingsForm() {
-  $('businessName').value = state.settings.businessName || '';
-  $('catalogTitle').value = state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle;
-  $('catalogSubtitle').value = state.settings.catalogSubtitle || '';
-  $('businessPhone').value = state.settings.businessPhone || '';
-  $('businessAddress').value = state.settings.businessAddress || '';
-  $('deliveryFee').value = state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee;
-  $('titleFont').value = state.settings.titleFont || DEFAULT_SETTINGS.titleFont;
-  $('bodyFont').value = state.settings.bodyFont || DEFAULT_SETTINGS.bodyFont;
-  $('priceFont').value = state.settings.priceFont || DEFAULT_SETTINGS.priceFont;
-  $('primaryColor').value = state.settings.primaryColor || DEFAULT_SETTINGS.primaryColor;
-  $('secondaryColor').value = state.settings.secondaryColor || DEFAULT_SETTINGS.secondaryColor;
-  $('backgroundColor').value = state.settings.backgroundColor || DEFAULT_SETTINGS.backgroundColor;
-  $('accentColor').value = state.settings.accentColor || DEFAULT_SETTINGS.accentColor;
-  $('pdfPageColor').value = state.settings.pdfPageColor || DEFAULT_SETTINGS.pdfPageColor;
-  $('pdfCardColor').value = state.settings.pdfCardColor || DEFAULT_SETTINGS.pdfCardColor;
-  $('pdfTextColor').value = state.settings.pdfTextColor || DEFAULT_SETTINGS.pdfTextColor;
-  $('promoBackgroundColor').value = state.settings.promoBackgroundColor || DEFAULT_SETTINGS.promoBackgroundColor; $('catalogBackgroundMode').value = state.settings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode;
-  $('promoFooter').value = state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter;
-  $('hideUnavailablePdf').checked = !!state.settings.hideUnavailablePdf;
-  $('showPromoFooter').checked = !!state.settings.showPromoFooter;
+  state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...state.settings });
+  setExistingInputValue('businessName', state.settings.businessName || '');
+  setExistingInputValue('catalogTitle', state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle);
+  setExistingInputValue('catalogSubtitle', state.settings.catalogSubtitle || '');
+  setExistingInputValue('businessPhone', state.settings.businessPhone || '');
+  setExistingInputValue('businessAddress', state.settings.businessAddress || '');
+  setExistingInputValue('deliveryFee', state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);
+  setExistingInputValue('titleFont', state.settings.titleFont || DEFAULT_SETTINGS.titleFont);
+  setExistingInputValue('bodyFont', state.settings.bodyFont || DEFAULT_SETTINGS.bodyFont);
+  setExistingInputValue('priceFont', state.settings.priceFont || DEFAULT_SETTINGS.priceFont);
+  setExistingInputValue('catalogBackgroundMode', normalizeCatalogBackgroundMode(state.settings.catalogBackgroundMode));
+  setExistingInputValue('promoFooter', state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter);
+  setExistingInputValue('hideUnavailablePdf', !!state.settings.hideUnavailablePdf);
+  setExistingInputValue('showPromoFooter', !!state.settings.showPromoFooter);
   updateFontSamples();
 }
-
 function renderStats() {
   $('statTotal').textContent = state.products.length;
   $('statAvailable').textContent = state.products.filter((p) => p.disponivel).length;
@@ -865,7 +865,7 @@ function imageUrlsForStorageEstimate() {
     state.assets.whatsappIconUrl,
     state.assets.deliveryIconUrl,
     state.assets.locationIconUrl,
-    state.assets.promoImageUrl, state.assets.catalogBackgroundUrl ].forEach((url) => {
+    state.assets.promoImageUrl ].forEach((url) => {
     if (url) urls.add(url);
   });
 
@@ -1052,8 +1052,8 @@ function colorIsWhite(hex) {
 }
 
 function internalPageColor() {
-  const pageColor = normalizeHex(state.settings.pdfPageColor, DEFAULT_SETTINGS.pdfPageColor);
-  return colorIsWhite(pageColor) ? normalizeHex(state.settings.backgroundColor, DEFAULT_SETTINGS.backgroundColor) : pageColor;
+  const pageColor = normalizeHex(activeCatalogPalette().pdfPageColor, DEFAULT_SETTINGS.pdfPageColor);
+  return colorIsWhite(pageColor) ? normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor) : pageColor;
 }
 
 function readableOnColor(hex) {
@@ -1399,9 +1399,9 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', center
 
 function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground }) {
   const w = 210, h = 297;
-  const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
-  const coverBg = normalizeHex(state.settings.backgroundColor, DEFAULT_SETTINGS.backgroundColor);
+  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const coverBg = normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor);
   const cream = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
   const softAccent = mixHex(accent, coverBg, 0.76);
   const softPrimary = mixHex(primary, coverBg, 0.82);
@@ -1409,9 +1409,6 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   drawPdfFullPageBackground(pdf, catalogBackground, coverBg, 'fundo-capa');
 
   // Fundo decorativo sutil, inspirado em catálogo floral, sem copiar referência.
-  setFillHex(pdf, softPrimary);
-  pdf.circle(18, 18, 34, 'F');
-  pdf.circle(196, 286, 42, 'F');
   setDrawHex(pdf, softAccent);
   pdf.setLineWidth(0.35);
   for (let i = 0; i < 5; i += 1) {
@@ -1430,7 +1427,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   pdf.setLineWidth(0.35);
   pdf.roundedRect(20, 20, 170, 257, 5, 5, 'S');
 
-  if (logoImage) { addImageContained(pdf, logoImage, 50, 60, 110, 32, 'logo-capa'); } else if (iconImage) {
+  if (logoImage) { addImageContained(pdf, logoImage, 34, 48, 142, 46, 'logo-capa'); } else if (iconImage) {
     addImageContained(pdf, iconImage, 38, 27, 24, 24, 'icone-capa');
   } else {
     drawSimpleFlower(pdf, 52, 39, 1.05, primary, accent);
@@ -1515,8 +1512,8 @@ function drawHeader() {
 }
 
 function drawCategoryTitle(pdf, title, x, y, width) {
-  const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
+  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
   const softLine = mixHex(accent, bg, 0.52);
 
@@ -1539,9 +1536,9 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
 }
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
-  const cardColor = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
-  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
-  const textColor = normalizeHex(state.settings.pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
+  const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const textColor = normalizeHex(activeCatalogPalette().pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
   const bg = internalPageColor();
   const softBorder = mixHex(accent, bg, 0.48);
 
@@ -1566,16 +1563,14 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
 
   setTextHex(pdf, textColor);
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(11.8);
-  const nameLines = splitLines(pdf, product.nome, textW, 3);
+  pdf.setFontSize(13.2); const nameLines = splitLines(pdf, product.nome, textW, 3);
   pdf.text(nameLines, textX, y + 8.2, { lineHeightFactor: 1.03 });
 
   const descricao = String(product.descricao || '').trim();
   if (descricao) {
     setTextHex(pdf, textColor);
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(7.6);
-    const descLines = splitLines(pdf, descricao, textW, 3);
+    pdf.setFontSize(8.4); const descLines = splitLines(pdf, descricao, textW, 3);
     pdf.text(descLines, textX, y + 24.4, { lineHeightFactor: 1.06 });
   }
 
@@ -1593,10 +1588,9 @@ function drawPromoFooter(pdf, promoImage) {
   if (!state.settings.showPromoFooter) return;
   const y = 270;
   const h = 27;
-  const bg = normalizeHex(state.settings.promoBackgroundColor || state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
-  setFillHex(pdf, bg);
-  pdf.rect(0, y, 210, h, 'F');
+  const bg = normalizeHex(activeCatalogPalette().promoBackgroundColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.86);
   setDrawHex(pdf, accent);
   pdf.setLineWidth(0.35);
   pdf.line(10, y + 1.5, 200, y + 1.5);
