@@ -192,7 +192,7 @@ let supabase;
 
 try {
   if (isConfigMissing()) {
-    throw new Error('Supabase ainda não configurado. Edite supabase-config.js com a URL e a chave anon/public do seu projeto.');
+    throw new Error('Supabase ainda não configurado.\nEdite supabase-config.js com a URL e a chave anon/public do seu projeto.');
   }
   supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey);
   state.supabaseReady = true;
@@ -721,7 +721,7 @@ async function handleCategoryAction(action, id) {
   if (action === 'delete') {
     const used = state.products.some((p) => p.categoriaId === id);
     if (used) {
-      toast('Não exclua categorias que ainda têm produtos. Altere os produtos primeiro.', 'error');
+      toast('Não exclua categorias que ainda têm produtos.\nAltere os produtos primeiro.', 'error');
       return;
     }
     if (!confirm(`Excluir a categoria "${category.nome}"?`)) return;
@@ -1749,12 +1749,22 @@ async function registerServiceWorker() {
   }
 }
 
-bindNavigation();
-bindAuth();
-bindProductUi();
-bindCategoryUi();
-bindAssetsUi();
-bindSettingsUi();
-bindPdfUi();
-setThemeVariables();
-registerServiceWorker();
+function safeAppInit(name, fn) {
+  try {
+    if (typeof fn === 'function') fn();
+  } catch (error) {
+    console.error(`Erro ao iniciar bloco "${name}".`, error);
+  }
+}
+
+window.__CATALOGO_MAIN_APP_OK__ = false;
+safeAppInit('navegacao', bindNavigation);
+safeAppInit('login', bindAuth);
+safeAppInit('produtos', bindProductUi);
+safeAppInit('categorias', bindCategoryUi);
+safeAppInit('imagens', bindAssetsUi);
+safeAppInit('aparencia', bindSettingsUi);
+safeAppInit('pdf', bindPdfUi);
+safeAppInit('tema', setThemeVariables);
+safeAppInit('service-worker', registerServiceWorker);
+window.__CATALOGO_MAIN_APP_OK__ = true;
