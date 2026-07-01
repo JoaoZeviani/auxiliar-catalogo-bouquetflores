@@ -2,7 +2,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabaseConfig, ADMIN_EMAIL } from './supabase-config.js';
 
 const STORAGE_BUCKET = 'catalogo-imagens';
-const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024; // referência visual usada pela barra do painel
+const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
+const APP_ICON_URL = './assets/icons/app-icon-192.png'; // referência visual usada pela barra do painel
 
 const DEFAULT_SETTINGS = {
   businessName: 'Sua Floricultura',
@@ -714,19 +715,20 @@ function renderAssetPreviews() {
 function renderBranding() {
   const logoUrl = state.assets.logoUrl || '';
   const targets = [
-    { id: 'loginBrandMark', fallback: '✿' },
-    { id: 'sidebarLogoMark', fallback: '✿' }
+    { id: 'loginBrandMark' },
+    { id: 'sidebarLogoMark' }
   ];
 
-  targets.forEach(({ id, fallback }) => {
+  targets.forEach(({ id }) => {
     const el = $(id);
     if (!el) return;
+
+    el.classList.add('has-logo', 'app-icon-mark');
+
     if (logoUrl) {
-      el.classList.add('has-logo');
       el.innerHTML = `<img src="${escapeHtml(logoUrl)}" alt="Logotipo da floricultura">`;
     } else {
-      el.classList.remove('has-logo');
-      el.textContent = fallback;
+      el.innerHTML = `<img src="${APP_ICON_URL}" alt="Ícone do Auxiliar de Catálogos">`;
     }
   });
 }

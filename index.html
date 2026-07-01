@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#7D1225" />
   <title>Auxiliar de Catálogos</title>
+  <link rel="icon" href="./assets/icons/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="./assets/icons/favicon-32.png" />
+  <link rel="apple-touch-icon" href="./assets/icons/app-icon-180.png" />
   <link rel="stylesheet" href="./styles.css?v=mobile-pdf-fix-20260701" />
   <link rel="manifest" href="./manifest.json" />
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
     <div class="login-card">
-      <span class="brand-mark">✿</span>
+      <span id="loginBrandMark" class="brand-mark app-icon-mark" aria-hidden="true"><img src="./assets/icons/app-icon-192.png" alt="" /></span>
       <h1>Auxiliar de Catálogos</h1>
       <p>Entre com a senha da floricultura para gerenciar produtos e gerar PDFs.</p>
 
@@ -31,7 +34,7 @@
   <main id="appShell" class="app-shell hidden">
     <aside class="sidebar">
       <div class="app-title">
-        <span class="app-symbol">✿</span>
+        <span id="sidebarLogoMark" class="app-symbol app-icon-mark" aria-hidden="true"><img src="./assets/icons/app-icon-192.png" alt="" /></span>
         <div>
           <strong>Catálogos Floricultura</strong>
           <small>Produtos e PDFs</small>
