@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auxiliar de Criação de Catálogos</title>
+  <meta name="theme-color" content="#5f7f5a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="brand-mark">✿</div>
+      <h1>Auxiliar de Catálogos</h1>
+      <p>Entre com a senha da floricultura para gerenciar produtos e gerar PDFs.</p>
+      <form id="loginForm" class="login-form">
+        <label for="passwordInput">Senha</label>
+        <div class="password-row">
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Digite a senha" required />
+          <button type="button" id="togglePassword" class="ghost-btn" aria-label="Mostrar senha">Mostrar</button>
+        </div>
+        <button class="primary-btn full" type="submit">Entrar</button>
+      </form>
+      <small class="muted">A senha não fica salva no código. A validação é feita pelo Supabase Auth.</small>
+    </div>
+  </section>
+
+  <main id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="app-title">
+        <span class="app-symbol">✿</span>
+        <div>
+          <strong>Catálogos</strong>
+          <small>Floricultura</small>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="Navegação principal">
+        <button data-tab="dashboard" class="active">Início</button>
+        <button data-tab="produtos">Produtos</button>
+        <button data-tab="categorias">Categorias</button>
+        <button data-tab="imagens">Imagens fixas</button>
+        <button data-tab="aparencia">Aparência do PDF</button>
+        <button data-tab="pdf">Gerar PDF</button>
+      </nav>
+      <button id="logoutBtn" class="secondary-btn logout">Sair</button>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Início</h2>
+          <p id="pageSubtitle">Resumo dos produtos e opções do catálogo.</p>
+        </div>
+        <button id="quickPdfBtn" class="primary-btn">Gerar PDF</button>
+      </header>
+
+      <section id="tab-dashboard" class="tab-panel active">
+        <div class="stats-grid">
+          <article class="stat-card"><span>Total de produtos</span><strong id="statTotal">0</strong></article>
+          <article class="stat-card"><span>Disponíveis</span><strong id="statAvailable">0</strong></article>
+          <article class="stat-card"><span>Indisponíveis</span><strong id="statUnavailable">0</strong></article>
+          <article class="stat-card"><span>Categorias</span><strong id="statCategories">0</strong></article>
+        </div>
+        <div class="welcome-card">
+          <h3>Fluxo recomendado</h3>
+          <ol>
+            <li>Cadastre as categorias e organize a ordem em que aparecerão no PDF.</li>
+            <li>Cadastre os produtos com foto, preço, descrição e disponibilidade.</li>
+            <li>Configure logotipo, foto de capa, cores e rodapé promocional.</li>
+            <li>Gere o PDF final para enviar aos clientes.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="tab-produtos" class="tab-panel">
+        <div class="section-actions">
+          <button id="newProductBtn" class="primary-btn">Novo produto</button>
+          <input id="productSearch" class="search-input" placeholder="Buscar produto..." />
+        </div>
+        <div id="productsList" class="cards-list"></div>
+      </section>
+
+      <section id="tab-categorias" class="tab-panel">
+        <form id="categoryForm" class="inline-form">
+          <input id="categoryName" placeholder="Nome da categoria" required />
+          <button class="primary-btn" type="submit">Adicionar categoria</button>
+        </form>
+        <div id="categoriesList" class="sortable-list"></div>
+      </section>
+
+      <section id="tab-imagens" class="tab-panel">
+        <div class="asset-grid">
+          <article class="asset-card">
+            <h3>Logotipo</h3>
+            <div id="logoPreview" class="asset-preview"></div>
+            <input type="file" id="logoInput" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Foto da capa</h3>
+            <div id="coverPreview" class="asset-preview wide"></div>
+            <input type="file" id="coverInput" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Ícone decorativo</h3>
+            <div id="iconPreview" class="asset-preview"></div>
+            <input type="file" id="iconInput" accept="image/*" />
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-aparencia" class="tab-panel">
+        <form id="settingsForm" class="settings-form">
+          <div class="form-grid">
+            <label>Nome da floricultura<input id="businessName" /></label>
+            <label>Subtítulo da capa<input id="catalogSubtitle" /></label>
+            <label>Telefone / WhatsApp<input id="businessPhone" /></label>
+            <label>Endereço<input id="businessAddress" /></label>
+          </div>
+          <div class="form-grid colors">
+            <label>Cor principal<input id="primaryColor" type="color" /></label>
+            <label>Cor secundária<input id="secondaryColor" type="color" /></label>
+            <label>Cor suave de fundo<input id="backgroundColor" type="color" /></label>
+            <label>Cor de destaque<input id="accentColor" type="color" /></label>
+          </div>
+          <label>Rodapé promocional<textarea id="promoFooter" rows="3"></textarea></label>
+          <div class="checkbox-row">
+            <label><input id="hideUnavailablePdf" type="checkbox" /> Ocultar produtos indisponíveis do PDF</label>
+            <label><input id="showPromoFooter" type="checkbox" /> Mostrar rodapé promocional nas páginas internas</label>
+          </div>
+          <button class="primary-btn" type="submit">Salvar aparência</button>
+        </form>
+      </section>
+
+      <section id="tab-pdf" class="tab-panel">
+        <div class="pdf-panel">
+          <h3>Gerar catálogo final</h3>
+          <p>O PDF terá capa, produtos separados por categoria, imagens, preços e rodapé promocional.</p>
+          <div class="checkbox-row">
+            <label><input id="pdfOnlyAvailable" type="checkbox" checked /> Usar apenas produtos disponíveis</label>
+          </div>
+          <button id="generatePdfBtn" class="primary-btn big">Baixar PDF do catálogo</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="productDialog" class="modal">
+    <form id="productForm" method="dialog">
+      <header class="modal-header">
+        <h3 id="productDialogTitle">Novo produto</h3>
+        <button type="button" id="closeProductDialog" class="icon-btn">×</button>
+      </header>
+      <input type="hidden" id="productId" />
+      <div class="form-grid">
+        <label>Nome do produto<input id="productName" required /></label>
+        <label>Preço<input id="productPrice" type="number" step="0.01" min="0" required /></label>
+      </div>
+      <label>Descrição<textarea id="productDescription" rows="4"></textarea></label>
+      <div class="form-grid">
+        <label>Categoria<select id="productCategory" required></select></label>
+        <label class="checkbox-label"><input id="productAvailable" type="checkbox" checked /> Produto disponível</label>
+      </div>
+      <label>Imagem do produto<input id="productImage" type="file" accept="image/*" /></label>
+      <div id="productImagePreview" class="product-image-preview"></div>
+      <footer class="modal-actions">
+        <button type="button" id="cancelProductBtn" class="secondary-btn">Cancelar</button>
+        <button type="submit" class="primary-btn">Salvar produto</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
