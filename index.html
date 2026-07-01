@@ -123,22 +123,42 @@
           <div class="form-grid">
             <label>Nome da floricultura<input id="businessName" /></label>
             <label>Subtítulo da capa<input id="catalogSubtitle" /></label>
-            <label>Telefone / WhatsApp<input id="businessPhone" /></label>
+            <label>WhatsApp<input id="businessPhone" placeholder="Ex.: (16) 99132-7357" /></label>
             <label>Endereço<input id="businessAddress" /></label>
+            <label>Taxa de entrega<input id="deliveryFee" placeholder="25,00" /></label>
+          </div>
+          <div class="form-grid font-grid">
+            <label>Fonte dos títulos
+              <select id="titleFont">
+                <option value="times">Clássica</option>
+                <option value="helvetica">Moderna</option>
+                <option value="courier">Simples</option>
+              </select>
+            </label>
+            <label>Fonte dos textos
+              <select id="bodyFont">
+                <option value="helvetica">Moderna</option>
+                <option value="times">Clássica</option>
+                <option value="courier">Simples</option>
+              </select>
+            </label>
+            <label>Fonte dos preços
+              <select id="priceFont">
+                <option value="helvetica">Moderna</option>
+                <option value="times">Clássica</option>
+                <option value="courier">Simples</option>
+              </select>
+            </label>
           </div>
           <div class="form-grid colors">
             <label>Cor principal<input id="primaryColor" type="color" /></label>
             <label>Cor secundária<input id="secondaryColor" type="color" /></label>
             <label>Fundo da capa<input id="backgroundColor" type="color" /></label>
-            <label>Cor de destaque<input id="accentColor" type="color" /></label>
+            <label>Destaque e preços<input id="accentColor" type="color" /></label>
             <label>Fundo das páginas<input id="pdfPageColor" type="color" /></label>
             <label>Fundo dos produtos<input id="pdfCardColor" type="color" /></label>
-            <label>Borda dos produtos<input id="pdfCardBorderColor" type="color" /></label>
             <label>Texto dos produtos<input id="pdfTextColor" type="color" /></label>
-            <label>Descrição dos produtos<input id="pdfMutedTextColor" type="color" /></label>
-            <label>Cor dos preços<input id="pdfPriceColor" type="color" /></label>
             <label>Fundo do rodapé<input id="promoBackgroundColor" type="color" /></label>
-            <label>Texto do rodapé<input id="promoTextColor" type="color" /></label>
           </div>
           <label>Rodapé promocional<textarea id="promoFooter" rows="3"></textarea></label>
           <div class="checkbox-row">
