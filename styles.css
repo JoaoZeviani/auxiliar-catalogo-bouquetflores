@@ -410,3 +410,86 @@ button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; 
 #tab-aparencia input[type="color"]:not(.keep-visible) {
   display: none !important;
 }
+
+/* Ajustes de layout, armazenamento, fundo do catálogo e categorias no celular */
+.storage-card-wide {
+  grid-column: 1 / -1 !important;
+  width: 100%;
+}
+.storage-card-wide .storage-progress,
+.storage-card-wide .progress,
+.storage-card-wide .storage-track {
+  min-height: 14px;
+}
+.catalog-background-visualizer {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(95, 127, 90, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: 0 10px 24px rgba(38, 48, 38, 0.07);
+}
+.catalog-background-visualizer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+#catalogBackgroundVisualLabel {
+  color: var(--primary);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+.catalog-background-visual-preview {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(38, 48, 38, 0.13);
+  overflow: hidden;
+}
+.catalog-background-visualizer p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+#categoriesList, .categories-list {
+  min-width: 0;
+}
+.category-name-input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+}
+@media (max-width: 760px) {
+  #categoriesList .category-item,
+  #categoriesList .category-card,
+  #categoriesList article,
+  .categories-list .category-item,
+  .categories-list .category-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
+  }
+  .category-name-input {
+    font-size: 1rem;
+    line-height: 1.25;
+    white-space: normal;
+  }
+  #categoriesList .actions,
+  #categoriesList .category-actions,
+  .categories-list .actions,
+  .categories-list .category-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .catalog-background-visual-preview {
+    min-height: 140px;
+  }
+}

@@ -87,7 +87,7 @@
             <div class="storage-track"><div id="storageBar" class="storage-bar" style="width:0%"></div></div>
             <div class="storage-foot">
               <span id="storageBytes">0 B usados</span>
-              <span>Limite de referência: 1 GB de arquivos no Supabase Storage</span>
+              <span>Limite de referência: 500 MB do backend</span>
             </div>
             <p class="muted">Estimativa feita pelas imagens cadastradas no Storage. O banco Postgres tem limite separado.</p>
           </article>
@@ -236,12 +236,21 @@
           <div class="form-grid">
             <label>Imagem de fundo do catálogo
               <select id="catalogBackgroundMode">
-                <option value="preset_1">Fundo 01 - folhas claras</option>
-                <option value="preset_2">Fundo 02 - eucalipto</option>
-                <option value="preset_3">Fundo 03 - floral rosado</option>
-                <option value="preset_4">Fundo 04 - verde suave</option>
-                <option value="preset_5">Fundo 05 - azul acinzentado</option>
-              </select>
+  <option value="preset_1">Fundo 01 - folhas claras</option>
+  <option value="preset_2">Fundo 02 - eucalipto</option>
+  <option value="preset_3">Fundo 03 - floral rosado</option>
+  <option value="preset_4">Fundo 04 - verde suave</option>
+  <option value="preset_5">Fundo 05 - azul acinzentado</option>
+  <option value="preset_6">Fundo 06 - vermelho escuro e bege</option>
+</select>
+<div class="catalog-background-visualizer">
+  <div class="catalog-background-visualizer-head">
+    <strong>Visualização do fundo escolhido</strong>
+    <span id="catalogBackgroundVisualLabel">Fundo selecionado</span>
+  </div>
+  <div id="catalogBackgroundVisualPreview" class="catalog-background-visual-preview" aria-label="Prévia do fundo do catálogo"></div>
+  <p>As cores do PDF são aplicadas automaticamente conforme o fundo escolhido.</p>
+</div>
             </label>
           </div>
 
