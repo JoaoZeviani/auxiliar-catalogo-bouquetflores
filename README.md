@@ -1,44 +1,32 @@
-# Auxiliar de Criação de Catálogos - Supabase
+# Auxiliar de Catálogos Bouquet Flores
 
-Programa web/PWA para cadastrar produtos de floricultura e gerar um catálogo em PDF.
+Aplicativo web para montar e gerar catálogos em PDF da floricultura.
 
-## O que ele faz
+## O que o programa faz
 
-- Cadastra, altera e exclui produtos.
-- Salva imagem, preço, descrição, categoria e disponibilidade.
-- Permite marcar produtos como disponíveis ou indisponíveis.
-- Oculta produtos indisponíveis no PDF final.
-- Cria, altera, exclui e ordena categorias.
-- Cadastra imagens fixas: logotipo, foto da capa e ícone decorativo.
-- Permite escolher cores e opções visuais do PDF.
-- Gera PDF com capa, produtos por categoria, imagens, preços e rodapé promocional.
+- Cadastra produtos com nome, preço, descrição, categoria, disponibilidade e imagem.
+- Permite alterar, excluir e marcar produtos como disponíveis ou indisponíveis.
+- Organiza produtos por categoria e permite ordenar as categorias.
+- Mostra um painel inicial com resumo do catálogo e uso estimado de armazenamento.
+- Permite cadastrar imagens fixas da loja, como logotipo, foto da capa, ícones e imagem promocional.
+- Gera um PDF pronto para enviar aos clientes, com capa, fundo visual, produtos por categoria, preços e rodapé promocional.
+- Permite escolher entre fundos prontos para o catálogo; as cores do PDF são ajustadas automaticamente ao fundo escolhido.
+- Pode ocultar produtos indisponíveis no PDF.
+- Funciona no navegador do computador e também no celular.
 
-## Arquitetura
+## Como usar
 
-- Interface: HTML, CSS e JavaScript.
-- Hospedagem: GitHub Pages.
-- Login: Supabase Auth.
-- Banco de dados: Supabase Postgres.
-- Imagens: Supabase Storage.
-- PDF: jsPDF no navegador.
+1. Acesse o aplicativo pelo link publicado no GitHub Pages.
+2. Entre com a senha da loja.
+3. Cadastre ou atualize produtos e categorias.
+4. Ajuste as informações da capa na aba **Aparência do PDF**.
+5. Cadastre logotipo e imagens fixas na aba **Imagens fixas**.
+6. Clique em **Gerar PDF**.
 
-## Senha
+## Uso pelo celular
 
-O app usa Supabase Auth. Fale com o João para pegar a senha
+O aplicativo foi ajustado para telas pequenas. No celular, é possível cadastrar produtos, alterar categorias, trocar imagens e gerar o PDF pelo navegador.
 
-Usuário padrão sugerido:
+## Observação
 
-```txt
-E-mail: catalogo@bouquetflores.local
-Senha: senha
-```
-
-Se usar outro e-mail, altere `ADMIN_EMAIL` no arquivo `supabase-config.js`.
-
-## Observação sobre imagens
-
-O bucket `catalogo-imagens` é público para leitura para que o PDF consiga carregar as fotos. Só usuários logados conseguem enviar, alterar ou excluir imagens.
-
-## Android no futuro
-
-Como o projeto é web/PWA, pode futuramente virar app Android usando Capacitor ou TWA, sem trocar o banco de dados.
+O cálculo de armazenamento é uma estimativa feita a partir das imagens cadastradas e dos dados do catálogo. Ele serve como referência para acompanhar se o catálogo está ficando pesado demais.

@@ -2,11 +2,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabaseConfig, ADMIN_EMAIL } from './supabase-config.js';
 
 const STORAGE_BUCKET = 'catalogo-imagens';
-const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024; // Referência visual do limite de 500 MB do backend. // Supabase Free: 1 GB de File Storage. O banco Postgres tem limite separado.
+const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024; // referência visual usada pela barra do painel
 
 const DEFAULT_SETTINGS = {
   businessName: 'Sua Floricultura',
-  catalogTitle: 'Catálogo de Flores', catalogSubtitle: 'Flores, presentes e carinho em cada detalhe',
+  catalogTitle: 'Catálogo de Flores',
+  catalogSubtitle: 'Flores, presentes e carinho em cada detalhe',
   businessPhone: '',
   businessAddress: '',
   deliveryFee: '25,00',
@@ -26,7 +27,8 @@ const DEFAULT_SETTINGS = {
   promoBackgroundColor: '#5f7f5a',
   promoTextColor: '#ffffff',
   promoFooter: 'Adicione chocolate ou pelúcia\npara deixar seu pedido ainda mais especial',
-  catalogBackgroundMode: 'preset_1', hideUnavailablePdf: true,
+  catalogBackgroundMode: 'preset_1',
+  hideUnavailablePdf: true,
   showPromoFooter: true
 };
 
@@ -38,7 +40,9 @@ const DEFAULT_ASSETS = {
   deliveryIconUrl: '', deliveryIconPath: '',
   locationIconUrl: '', locationIconPath: '',
   promoImageUrl: '', promoImagePath: '',
-  catalogBackgroundUrl: '', catalogBackgroundPath: '', importedFixedImages: {}
+  catalogBackgroundUrl: '',
+  catalogBackgroundPath: '',
+  importedFixedImages: {}
 };
 
 const CATALOG_BACKGROUND_PRESETS = {
@@ -46,14 +50,46 @@ const CATALOG_BACKGROUND_PRESETS = {
   preset_2: './assets/fundos-catalogo/fundo_catalogo_02.jpg',
   preset_3: './assets/fundos-catalogo/fundo_catalogo_03.jpg',
   preset_4: './assets/fundos-catalogo/fundo_catalogo_04.jpg',
-  preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg', preset_6: './assets/fundos-catalogo/fundo_catalogo_06.jpg'
+  preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg',
+  preset_6: './assets/fundos-catalogo/fundo_catalogo_06.jpg'
 };
 const CATALOG_BACKGROUND_PALETTES = {
-  preset_1: { primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#b98b50', pdfPageColor: '#f6f0e7', pdfCardColor: '#fffaf2', pdfCardBorderColor: '#d8c7ad', pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#9d6d32', promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff' },
-  preset_2: { primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#a98756', pdfPageColor: '#f3f1ea', pdfCardColor: '#fffdf6', pdfCardBorderColor: '#c9d2c5', pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#8a6a3c', promoBackgroundColor: '#60766a', promoTextColor: '#ffffff' },
-  preset_3: { primaryColor: '#74614f', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570', pdfPageColor: '#faf1ed', pdfCardColor: '#fff9f6', pdfCardBorderColor: '#e2c3bb', pdfTextColor: '#352b25', pdfMutedTextColor: '#7a6c63', pdfPriceColor: '#a65f5b', promoBackgroundColor: '#74614f', promoTextColor: '#ffffff' },
-  preset_4: { primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#87945d', pdfPageColor: '#eff4ed', pdfCardColor: '#fbfff8', pdfCardBorderColor: '#c8d6c3', pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#6f7f43', promoBackgroundColor: '#597061', promoTextColor: '#ffffff' },
-  preset_5: { primaryColor: '#546875', secondaryColor: '#b7c2c8', backgroundColor: '#eef2f2', accentColor: '#8b8b60', pdfPageColor: '#eef2f2', pdfCardColor: '#fbfdfc', pdfCardBorderColor: '#c6d0d4', pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#747344', promoBackgroundColor: '#546875', promoTextColor: '#ffffff' }
+  preset_1: {
+    primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#b98b50',
+    pdfPageColor: '#f6f0e7', pdfCardColor: '#fffaf2', pdfCardBorderColor: '#d8c7ad',
+    pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#9d6d32',
+    promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff'
+  },
+  preset_2: {
+    primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#a98756',
+    pdfPageColor: '#f3f1ea', pdfCardColor: '#fffdf6', pdfCardBorderColor: '#c9d2c5',
+    pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#8a6a3c',
+    promoBackgroundColor: '#60766a', promoTextColor: '#ffffff'
+  },
+  preset_3: {
+    primaryColor: '#74614f', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570',
+    pdfPageColor: '#faf1ed', pdfCardColor: '#fff9f6', pdfCardBorderColor: '#e2c3bb',
+    pdfTextColor: '#352b25', pdfMutedTextColor: '#7a6c63', pdfPriceColor: '#a65f5b',
+    promoBackgroundColor: '#74614f', promoTextColor: '#ffffff'
+  },
+  preset_4: {
+    primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#87945d',
+    pdfPageColor: '#eff4ed', pdfCardColor: '#fbfff8', pdfCardBorderColor: '#c8d6c3',
+    pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#6f7f43',
+    promoBackgroundColor: '#597061', promoTextColor: '#ffffff'
+  },
+  preset_5: {
+    primaryColor: '#546875', secondaryColor: '#b7c2c8', backgroundColor: '#eef2f2', accentColor: '#8b8b60',
+    pdfPageColor: '#eef2f2', pdfCardColor: '#fbfdfc', pdfCardBorderColor: '#c6d0d4',
+    pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#747344',
+    promoBackgroundColor: '#546875', promoTextColor: '#ffffff'
+  },
+  preset_6: {
+    primaryColor: '#6b3b33', secondaryColor: '#c7a894', backgroundColor: '#f3e7dc', accentColor: '#8a4b41',
+    pdfPageColor: '#f3e7dc', pdfCardColor: '#fff8ef', pdfCardBorderColor: '#d6b9a5',
+    pdfTextColor: '#352724', pdfMutedTextColor: '#74635d', pdfPriceColor: '#7b332f',
+    promoBackgroundColor: '#6b3b33', promoTextColor: '#ffffff'
+  }
 };
 function normalizeCatalogBackgroundMode(mode) {
   return CATALOG_BACKGROUND_PRESETS[mode] ? mode : 'preset_1';
@@ -72,7 +108,38 @@ function applyCatalogPaletteToSettings(settings) {
   const palette = paletteForCatalogMode(mode);
   return { ...safeSettings, catalogBackgroundMode: mode, ...palette };
 }
-function selectedCatalogBackgroundUrl() {   const mode = normalizeCatalogBackgroundMode((state && state.settings && state.settings.catalogBackgroundMode) || DEFAULT_SETTINGS.catalogBackgroundMode);   return CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1; } function catalogBackgroundLabel(mode) {   const labels = {     preset_1: 'Fundo 01 - folhas claras',     preset_2: 'Fundo 02 - eucalipto',     preset_3: 'Fundo 03 - floral rosado',     preset_4: 'Fundo 04 - verde suave',     preset_5: 'Fundo 05 - azul acinzentado',     preset_6: 'Fundo 06 - vermelho escuro e bege'   };   return labels[normalizeCatalogBackgroundMode(mode)] || labels.preset_1; } function renderCatalogBackgroundPreview() {   const preview = $('catalogBackgroundVisualPreview');   const label = $('catalogBackgroundVisualLabel');   if (!preview && !label) return;   const mode = normalizeCatalogBackgroundMode((state && state.settings && state.settings.catalogBackgroundMode) || DEFAULT_SETTINGS.catalogBackgroundMode);   const url = CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;   if (preview) {     preview.style.backgroundImage = url ? 'url("' + url + '")' : '';     preview.textContent = '';   }   if (label) label.textContent = catalogBackgroundLabel(mode); }
+function selectedCatalogBackgroundUrl() {
+  const mode = normalizeCatalogBackgroundMode(state?.settings?.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
+  return CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
+}
+
+function catalogBackgroundLabel(mode) {
+  const labels = {
+    preset_1: 'Fundo 01 - folhas claras',
+    preset_2: 'Fundo 02 - eucalipto',
+    preset_3: 'Fundo 03 - floral rosado',
+    preset_4: 'Fundo 04 - verde suave',
+    preset_5: 'Fundo 05 - azul acinzentado',
+    preset_6: 'Fundo 06 - vermelho escuro sutil e bege'
+  };
+  return labels[normalizeCatalogBackgroundMode(mode)] || labels.preset_1;
+}
+
+function renderCatalogBackgroundPreview() {
+  const preview = $('catalogBackgroundVisualPreview');
+  const label = $('catalogBackgroundVisualLabel');
+  if (!preview && !label) return;
+
+  const mode = normalizeCatalogBackgroundMode(state?.settings?.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
+  const url = CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
+
+  if (preview) {
+    preview.style.backgroundImage = `url("${url}")`;
+    preview.textContent = '';
+  }
+  if (label) label.textContent = catalogBackgroundLabel(mode);
+}
+
 const state = {
   products: [],
   categories: [],
@@ -90,7 +157,7 @@ const pageData = {
   produtos: ['Produtos', 'Cadastre, altere, exclua e controle a disponibilidade.'],
   categorias: ['Categorias', 'Organize a ordem das categorias no PDF.'],
   imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem promocional.'],
-  aparencia: ['Aparência do PDF', 'Escolha cores, informações da capa e rodapé promocional.']
+  aparencia: ['Aparência do PDF', 'Escolha informações da capa, fundo, fontes e rodapé promocional.']
 };
 
 function toast(message, type = 'ok') {
@@ -816,6 +883,7 @@ function bindSettingsUi() {
       if (id === 'catalogBackgroundMode') {
         state.settings = applyCatalogPaletteToSettings({ ...state.settings, catalogBackgroundMode: normalizeCatalogBackgroundMode(el.value) });
         setThemeVariables();
+        renderCatalogBackgroundPreview();
       }
       scheduleSettingsAutoSave();
     });
@@ -835,7 +903,8 @@ function fillSettingsForm() {
   setExistingInputValue('titleFont', state.settings.titleFont || DEFAULT_SETTINGS.titleFont);
   setExistingInputValue('bodyFont', state.settings.bodyFont || DEFAULT_SETTINGS.bodyFont);
   setExistingInputValue('priceFont', state.settings.priceFont || DEFAULT_SETTINGS.priceFont);
-  setExistingInputValue('catalogBackgroundMode', normalizeCatalogBackgroundMode(state.settings.catalogBackgroundMode)); renderCatalogBackgroundPreview();
+  setExistingInputValue('catalogBackgroundMode', normalizeCatalogBackgroundMode(state.settings.catalogBackgroundMode));
+  renderCatalogBackgroundPreview();
   setExistingInputValue('promoFooter', state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter);
   setExistingInputValue('hideUnavailablePdf', !!state.settings.hideUnavailablePdf);
   setExistingInputValue('showPromoFooter', !!state.settings.showPromoFooter);
@@ -862,7 +931,8 @@ function imageUrlsForStorageEstimate() {
     state.assets.whatsappIconUrl,
     state.assets.deliveryIconUrl,
     state.assets.locationIconUrl,
-    state.assets.promoImageUrl ].forEach((url) => {
+    state.assets.promoImageUrl
+  ].forEach((url) => {
     if (url) urls.add(url);
   });
 
@@ -878,16 +948,28 @@ function formatBytes(bytes = 0) {
 }
 
 async function remoteFileSize(url) {
+  if (!url) return 0;
+
+  const fetchWithTimeout = async (targetUrl, options = {}, timeoutMs = 8000) => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(targetUrl, { ...options, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  };
+
   try {
-    const head = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    const head = await fetchWithTimeout(url, { method: 'HEAD', cache: 'no-store' }, 5000);
     const len = Number(head.headers.get('content-length') || 0);
     if (head.ok && len > 0) return len;
   } catch (_error) {
-    // Alguns buckets não retornam HEAD/CORS; nesses casos tentamos baixar a imagem.
+    // Alguns buckets não retornam HEAD/CORS. Nesses casos tentamos GET abaixo.
   }
 
   try {
-    const response = await fetch(url, { cache: 'force-cache' });
+    const response = await fetchWithTimeout(url, { cache: 'force-cache' }, 10000);
     if (!response.ok) return 0;
     const blob = await response.blob();
     return blob.size || 0;
@@ -896,34 +978,44 @@ async function remoteFileSize(url) {
   }
 }
 
-function enhanceDashboardStorageLayout() {   const title = [...document.querySelectorAll('h3, h2, strong')].find((el) => /Armazenamento usado/i.test(el.textContent || ''));   if (!title) return;   let card = title;   while (card && card !== document.body && !card.querySelector?.('#storageBar, #storagePercent, #storageUsedLabel')) card = card.parentElement;   if (!card || card === document.body) card = title.closest('article, section, .card, .dashboard-card, .panel, div');   if (card) card.classList.add('storage-card-wide'); } function renderStorageUsage({ loading = false } = {}) { enhanceDashboardStorageLayout();
+function renderStorageUsage({ loading = false } = {}) {
   const used = Number(state.storageEstimate.usedBytes || 0);
-  const percent = Math.min(100, Math.max(0, used / STORAGE_LIMIT_BYTES * 100));
-  const percentText = `${percent < 0.1 && used > 0 ? '<0,1' : percent.toFixed(percent >= 10 ? 1 : 2).replace('.', ',')}%`;
+  const percent = Math.min(100, Math.max(0, (used / STORAGE_LIMIT_BYTES) * 100));
+  const percentNumber = percent < 0.1 && used > 0 ? '<0,1' : percent.toFixed(percent >= 10 ? 1 : 2).replace('.', ',');
+  const percentText = `${percentNumber}%`;
+  const usedText = `${formatBytes(used)} usados de ${formatBytes(STORAGE_LIMIT_BYTES)}`;
 
   if ($('storageBar')) $('storageBar').style.width = `${Math.max(percent, used > 0 ? 0.7 : 0)}%`;
   if ($('storagePercent')) $('storagePercent').textContent = loading ? '...' : percentText;
-  if ($('storageUsedLabel')) $('storageUsedLabel').textContent = loading
-    ? 'Calculando imagens cadastradas...'
-    : `${formatBytes(used)} usados de ${formatBytes(STORAGE_LIMIT_BYTES)}`;
-  if ($('storageLimitLabel')) $('storageLimitLabel').textContent = `Limite de referência do backend: ${formatBytes(STORAGE_LIMIT_BYTES)}`;
-  if ($('storageNote')) $('storageNote').textContent = state.storageEstimate.status === 'partial'
+  if ($('storageStatus')) $('storageStatus').textContent = loading ? 'Calculando imagens...' : usedText;
+  if ($('storageBytes')) $('storageBytes').textContent = usedText;
+
+  const note = state.storageEstimate.status === 'partial'
     ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
-    : 'Estimativa feita pelas imagens cadastradas. Fundos fixos do app não entram nessa conta.';
+    : 'Estimativa feita pelas imagens cadastradas no Storage. Fundos fixos do app não entram nessa conta.';
+
+  if ($('storageNote')) $('storageNote').textContent = note;
 }
 
 let storageEstimateRun = 0;
 async function refreshStorageEstimate() {
   const run = ++storageEstimateRun;
   renderStorageUsage({ loading: true });
+
   const urls = imageUrlsForStorageEstimate();
-  const textBytes = new Blob([JSON.stringify({ products: state.products, categories: state.categories, settings: state.settings, assets: state.assets })]).size;
+  const textBytes = new Blob([JSON.stringify({
+    products: state.products,
+    categories: state.categories,
+    settings: state.settings,
+    assets: state.assets
+  })]).size;
 
   const results = await Promise.allSettled(urls.map(remoteFileSize));
   if (run !== storageEstimateRun) return;
 
   const imageBytes = results.reduce((sum, result) => sum + (result.status === 'fulfilled' ? Number(result.value || 0) : 0), 0);
   const failed = results.some((result) => result.status !== 'fulfilled');
+
   state.storageEstimate = {
     usedBytes: imageBytes + textBytes,
     status: failed ? 'partial' : 'ok'
@@ -1059,14 +1151,45 @@ function readableOnColor(hex) {
   return luminance > 0.58 ? '#263026' : '#ffffff';
 }
 
-function addImageContained(pdf, image, x, y, w, h, alias) {
-  if (!image?.dataUrl || !image.width || !image.height) return false;
+function containedImageRect(image, x, y, w, h) {
+  if (!image?.dataUrl || !image.width || !image.height) return null;
   const scale = Math.min(w / image.width, h / image.height);
   const drawW = image.width * scale;
   const drawH = image.height * scale;
-  const dx = x + (w - drawW) / 2;
-  const dy = y + (h - drawH) / 2;
-  pdf.addImage(image.dataUrl, imageType(image.dataUrl), dx, dy, drawW, drawH, alias, 'FAST');
+  return {
+    x: x + (w - drawW) / 2,
+    y: y + (h - drawH) / 2,
+    w: drawW,
+    h: drawH
+  };
+}
+
+function addImageContained(pdf, image, x, y, w, h, alias) {
+  const rect = containedImageRect(image, x, y, w, h);
+  if (!rect) return false;
+  pdf.addImage(image.dataUrl, imageType(image.dataUrl), rect.x, rect.y, rect.w, rect.h, alias, 'FAST');
+  return true;
+}
+
+function addImageContainedRounded(pdf, image, x, y, w, h, alias, radius = 2.4) {
+  const rect = containedImageRect(image, x, y, w, h);
+  if (!rect) return false;
+
+  try {
+    if (typeof pdf.saveGraphicsState === 'function' && typeof pdf.restoreGraphicsState === 'function' && typeof pdf.clip === 'function') {
+      pdf.saveGraphicsState();
+      pdf.roundedRect(rect.x, rect.y, rect.w, rect.h, radius, radius);
+      pdf.clip();
+      pdf.addImage(image.dataUrl, imageType(image.dataUrl), rect.x, rect.y, rect.w, rect.h, alias, 'FAST');
+      pdf.restoreGraphicsState();
+      return true;
+    }
+  } catch (error) {
+    try { pdf.restoreGraphicsState?.(); } catch (_restoreError) {}
+    console.warn('Não foi possível arredondar a imagem no PDF.', error);
+  }
+
+  pdf.addImage(image.dataUrl, imageType(image.dataUrl), rect.x, rect.y, rect.w, rect.h, alias, 'FAST');
   return true;
 }
 
@@ -1233,7 +1356,8 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     const deliveryIcon = await getImage(state.assets.deliveryIconUrl);
     const locationIcon = await getImage(state.assets.locationIconUrl);
     const rawPromoImage = await getImage(state.assets.promoImageUrl);
-    const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null; const catalogBackground = await getImage(selectedCatalogBackgroundUrl());
+    const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null;
+    const catalogBackground = await getImage(selectedCatalogBackgroundUrl());
 
     drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground });
 
@@ -1394,67 +1518,53 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', center
   pdf.circle(cx, cy, 2.1 * scale, 'F');
 }
 
-function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground }) {   const w = 210, h = 297;   const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);   const coverBg = normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor);   const cream = normalizeHex(state.settings.pdfCardColor, '#fffaf1');   const softAccent = mixHex(accent, coverBg, 0.70);   drawPdfFullPageBackground(pdf, catalogBackground, coverBg, 'fundo-capa');   fillRoundedRectWithOpacity(pdf, 16, 16, 178, 265, 7, 7, cream, 0.84);   setDrawHex(pdf, softAccent);   pdf.setLineWidth(0.35);   pdf.roundedRect(20, 20, 170, 257, 5, 5, 'S');   if (logoImage) {     addImageContained(pdf, logoImage, 36, 34, 138, 54, 'logo-capa');   } else if (iconImage) {     addImageContained(pdf, iconImage, 92, 36, 26, 26, 'icone-capa');   } else {     drawSimpleFlower(pdf, 105, 48, 1.05, primary, accent);   }   const catalogTitle = String(state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle).trim();   setPdfFont(pdf, 'title', 'bold');   pdf.setFontSize(29);   setTextHex(pdf, primary);   pdf.text(splitLines(pdf, catalogTitle, 145, 2), 105, 106, { align: 'center', maxWidth: 145, lineHeightFactor: 1.03 });   setDrawHex(pdf, accent);   pdf.setLineWidth(0.32);   pdf.line(60, 116, 150, 116);   if (coverImage) {     fillRoundedRectWithOpacity(pdf, 28, 126, 154, 70, 5, 5, '#ffffff', 0.78);     setDrawHex(pdf, softAccent);     pdf.setLineWidth(0.35);     pdf.roundedRect(28, 126, 154, 70, 5, 5, 'S');     addImageContained(pdf, coverImage, 32, 130, 146, 62, 'foto-capa');   } else {     fillRoundedRectWithOpacity(pdf, 38, 126, 134, 70, 5, 5, '#ffffff', 0.78);     drawSimpleFlower(pdf, 105, 161, 2.55, primary, accent);   }   const subtitle = String(state.settings.catalogSubtitle || '').trim();   if (subtitle) {     setPdfFont(pdf, 'body', 'italic');     pdf.setFontSize(14.2);     setTextHex(pdf, primary);     pdf.text(subtitle, 105, 215, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });   }   const phone = String(state.settings.businessPhone || '').trim();   const address = String(state.settings.businessAddress || '').trim();   const deliveryFee = formatDeliveryFee(state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);   const items = [     { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp', icon: whatsappIcon },     { label: 'ENTREGA', value: deliveryFee ? 'Taxa ' + deliveryFee : 'Taxa de entrega', icon: deliveryIcon },     { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }   ];   const itemW = 45;   const itemGap = 4;   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);   const startX = (w - itemsTotalW) / 2;   items.forEach((item, index) => {     const x = startX + index * (itemW + itemGap);     const boxY = 236;     const boxH = 25;     fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.78);     setDrawHex(pdf, softAccent);     pdf.setLineWidth(0.22);     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');     if (item.icon) {       addImageContained(pdf, item.icon, x + 3.2, boxY + 8, 9.5, 9.5, 'cover-icon-' + index);     } else {       setFillHex(pdf, mixHex(accent, '#ffffff', 0.18));       pdf.circle(x + 8, boxY + 13, 4.8, 'F');       setPdfFont(pdf, 'body', 'bold');       setPdfFontSize(pdf, 7.1, 'body');       pdf.setTextColor(255, 255, 255);       pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 8, boxY + 15.3, { align: 'center' });     }     setPdfFont(pdf, 'body', 'bold');     setPdfFontSize(pdf, 6.9, 'body');     setTextHex(pdf, primary);     pdf.text(item.label, x + 15, boxY + 8.2, { maxWidth: 25 });     setPdfFont(pdf, 'body', 'normal');     setPdfFontSize(pdf, 6.0, 'body');     setTextHex(pdf, '#4d554c');     pdf.text(splitLines(pdf, item.value, 26, 2), x + 15, boxY + 14.8, { maxWidth: 26, lineHeightFactor: 1.02 });   }); }) {
-  const w = 210, h = 297;
+function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground }) {
+  const w = 210;
   const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
   const coverBg = normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor);
-  const cream = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
-  const softAccent = mixHex(accent, coverBg, 0.76);
-  const softPrimary = mixHex(primary, coverBg, 0.82);
+  const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');
+  const softAccent = mixHex(accent, coverBg, 0.72);
 
   drawPdfFullPageBackground(pdf, catalogBackground, coverBg, 'fundo-capa');
 
-  // Fundo decorativo sutil, inspirado em catálogo floral, sem copiar referência.
+  fillRoundedRectWithOpacity(pdf, 16, 17, 178, 263, 7, 7, cardColor, 0.84);
   setDrawHex(pdf, softAccent);
   pdf.setLineWidth(0.35);
-  for (let i = 0; i < 5; i += 1) {
-    const x = 14 + i * 10;
-    pdf.line(x, 247 + i * 4, x + 20, 226 + i * 2);
-    pdf.circle(x + 11, 237 + i * 2.5, 1.1, 'S');
-  }
-  for (let i = 0; i < 5; i += 1) {
-    const x = 184 - i * 10;
-    pdf.line(x, 36 + i * 3, x - 18, 23 + i * 2);
-    pdf.circle(x - 8, 30 + i * 2.5, 1.1, 'S');
-  }
+  pdf.roundedRect(20, 21, 170, 255, 5, 5, 'S');
 
-  fillRoundedRectWithOpacity(pdf, 16, 16, 178, 265, 7, 7, cream, 0.86);
-  setDrawHex(pdf, softAccent);
-  pdf.setLineWidth(0.35);
-  pdf.roundedRect(20, 20, 170, 257, 5, 5, 'S');
-
-  if (logoImage) { addImageContained(pdf, logoImage, 34, 48, 142, 46, 'logo-capa'); } else if (iconImage) {
-    addImageContained(pdf, iconImage, 38, 27, 24, 24, 'icone-capa');
+  if (logoImage) {
+    addImageContained(pdf, logoImage, 34, 36, 142, 60, 'logo-capa');
+  } else if (iconImage) {
+    addImageContained(pdf, iconImage, 91, 40, 28, 28, 'icone-capa');
   } else {
-    drawSimpleFlower(pdf, 52, 39, 1.05, primary, accent);
+    drawSimpleFlower(pdf, 105, 52, 1.08, primary, accent);
   }
 
   const catalogTitle = String(state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle).trim();
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(28);
+  pdf.setFontSize(29);
   setTextHex(pdf, primary);
-  pdf.text(splitLines(pdf, catalogTitle.toUpperCase(), 105, 2), 181, 39, { align: 'right', maxWidth: 105, lineHeightFactor: 1.02 });
+  pdf.text(splitLines(pdf, catalogTitle, 150, 2), 105, 110, { align: 'center', maxWidth: 150, lineHeightFactor: 1.03 });
 
-  // O nome da loja não é escrito na capa; o logotipo ocupa esse lugar.
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.32);
+  pdf.line(60, 120, 150, 120);
 
   if (coverImage) {
-    fillRoundedRectWithOpacity(pdf, 28, 104, 154, 96, 5, 5, '#ffffff', 0.84);
+    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#ffffff', 0.74);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.35);
-    pdf.roundedRect(28, 104, 154, 96, 5, 5, 'S');
-    addImageContained(pdf, coverImage, 32, 108, 146, 88, 'foto-capa');
-  } else {
-    fillRoundedRectWithOpacity(pdf, 38, 106, 134, 86, 5, 5, '#ffffff', 0.84);
-    drawSimpleFlower(pdf, 105, 149, 3, primary, accent);
+    pdf.roundedRect(28, 128, 154, 66, 5, 5, 'S');
+    addImageContainedRounded(pdf, coverImage, 32, 132, 146, 58, 'foto-capa', 3.2);
   }
 
   const subtitle = String(state.settings.catalogSubtitle || '').trim();
   if (subtitle) {
     setPdfFont(pdf, 'body', 'italic');
-    pdf.setFontSize(14.5);
+    pdf.setFontSize(14.2);
     setTextHex(pdf, primary);
-    pdf.text(subtitle, 105, 219, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
+    pdf.text(subtitle, 105, coverImage ? 214 : 170, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
   const phone = String(state.settings.businessPhone || '').trim();
@@ -1470,14 +1580,17 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   const itemGap = 4;
   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
   const startX = (w - itemsTotalW) / 2;
+
   items.forEach((item, index) => {
     const x = startX + index * (itemW + itemGap);
-    const boxY = 234;
+    const boxY = 236;
     const boxH = 25;
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.84);
+
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.78);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.22);
     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
+
     if (item.icon) {
       addImageContained(pdf, item.icon, x + 3.2, boxY + 8, 9.5, 9.5, `cover-icon-${index}`);
     } else {
@@ -1488,10 +1601,12 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
       pdf.setTextColor(255, 255, 255);
       pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 8, boxY + 15.3, { align: 'center' });
     }
+
     setPdfFont(pdf, 'body', 'bold');
     setPdfFontSize(pdf, 6.9, 'body');
     setTextHex(pdf, primary);
     pdf.text(item.label, x + 15, boxY + 8.2, { maxWidth: 25 });
+
     setPdfFont(pdf, 'body', 'normal');
     setPdfFontSize(pdf, 6.0, 'body');
     setTextHex(pdf, '#4d554c');
@@ -1508,7 +1623,27 @@ function drawHeader() {
   // Sem cabeçalho nas páginas internas para economizar espaço e evitar textos repetidos.
 }
 
-function drawCategoryTitle(pdf, title, x, y, width) {   const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);   const bg = internalPageColor();   const headerBg = mixHex(primary, bg, 0.18);   const border = mixHex(accent, bg, 0.22);   const bottomLine = mixHex(accent, bg, 0.08);   const textColor = readableOnColor(headerBg);   fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.91);   setDrawHex(pdf, border);   pdf.setLineWidth(0.35);   pdf.roundedRect(x, y, width, 10.8, 2.8, 2.8, 'S');   setFillHex(pdf, bottomLine);   withPdfOpacity(pdf, 0.70, () => pdf.rect(x + 4, y + 9.3, width - 8, 0.8, 'F'));   setPdfFont(pdf, 'title', 'bold');   setPdfFontSize(pdf, 14.2, 'title');   setTextHex(pdf, textColor);   pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 }); }
+function drawCategoryTitle(pdf, title, x, y, width) {
+  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const bg = internalPageColor();
+  const headerBg = mixHex(primary, bg, 0.14);
+  const border = mixHex(accent, bg, 0.24);
+  const textColor = readableOnColor(headerBg);
+
+  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.93);
+  setDrawHex(pdf, border);
+  pdf.setLineWidth(0.35);
+  pdf.roundedRect(x, y, width, 10.8, 2.8, 2.8, 'S');
+
+  setFillHex(pdf, mixHex(accent, bg, 0.16));
+  withPdfOpacity(pdf, 0.72, () => pdf.rect(x + 4, y + 9.3, width - 8, 0.7, 'F'));
+
+  setPdfFont(pdf, 'title', 'bold');
+  setPdfFontSize(pdf, 14.2, 'title');
+  setTextHex(pdf, textColor);
+  pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 });
+}
 
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
@@ -1518,9 +1653,85 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
   // Sem decoração automática no espaço restante.
 }
 
-function drawProductCard(pdf, product, x, y, w, h, image) {   const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);   const textColor = normalizeHex(activeCatalogPalette().pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);   const bg = internalPageColor();   const softBorder = mixHex(accent, bg, 0.48);   fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);   setDrawHex(pdf, softBorder);   pdf.setLineWidth(0.26);   pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');   const padding = 1.2;   const imageW = 50;   const imageH = h - 2.4;   const imageX = x + w - imageW - padding;   const imageY = y + 1.2;   const textX = x + 2.2;   const textW = Math.max(34, imageX - textX - 1.0);   if (image) {     addImageContained(pdf, image, imageX, imageY, imageW, imageH, 'produto-' + product.id);   } else {     drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, state.settings.primaryColor, state.settings.secondaryColor);   }   const descricao = String(product.descricao || '').trim();   const hasDescricao = descricao.length > 0;   setTextHex(pdf, textColor);   setPdfFont(pdf, 'title', 'bold');   pdf.setFontSize(hasDescricao ? 13.2 : 14.3);   const nameLines = splitLines(pdf, product.nome, textW, hasDescricao ? 3 : 2);   pdf.text(nameLines, textX, hasDescricao ? y + 8.2 : y + 15.4, { lineHeightFactor: 1.03 });   if (hasDescricao) {     setTextHex(pdf, textColor);     setPdfFont(pdf, 'body', 'normal');     pdf.setFontSize(8.4);     const descLines = splitLines(pdf, descricao, textW, 3);     pdf.text(descLines, textX, y + 24.4, { lineHeightFactor: 1.06 });   }   const lineY = hasDescricao ? y + h - 15 : y + 25.5;   const priceY = hasDescricao ? y + h - 5.5 : y + 34.4;   setDrawHex(pdf, accent);   pdf.setLineWidth(0.2);   pdf.line(textX, lineY, textX + Math.min(27, textW), lineY);   setTextHex(pdf, accent);   setPdfFont(pdf, 'price', 'bold');   pdf.setFontSize(hasDescricao ? 12.1 : 12.8);   pdf.text(formatCurrency(product.preco), textX, priceY, { maxWidth: textW }); }
+function drawProductCard(pdf, product, x, y, w, h, image) {
+  const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const textColor = normalizeHex(activeCatalogPalette().pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
+  const bg = internalPageColor();
+  const softBorder = mixHex(accent, bg, 0.48);
 
-function drawPromoFooter(pdf, promoImage) {   if (!state.settings.showPromoFooter) return;   const y = 270;   const h = 27;   const bg = normalizeHex(activeCatalogPalette().promoBackgroundColor, DEFAULT_SETTINGS.primaryColor);   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);   fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.76);   setDrawHex(pdf, accent);   pdf.setLineWidth(0.35);   pdf.line(10, y + 1.5, 200, y + 1.5);   setPdfFont(pdf, 'title', 'bold');   pdf.setFontSize(12.7);   pdf.setTextColor(255, 255, 255);   const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);   pdf.text(lines, 18, y + 10, { maxWidth: 123, lineHeightFactor: 1.12 });   if (promoImage) {     addImageContained(pdf, promoImage, 148, y + 1.5, 48, 24, 'rodape-promo');   } }
+  fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);
+  setDrawHex(pdf, softBorder);
+  pdf.setLineWidth(0.26);
+  pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');
+
+  const padding = 1.5;
+  const imageW = 50;
+  const imageH = h - 3;
+  const imageX = x + w - imageW - padding;
+  const imageY = y + 1.5;
+  const textX = x + 2.4;
+  const textW = Math.max(34, imageX - textX - 1.2);
+
+  if (image) {
+    addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 2.7);
+  } else {
+    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, activeCatalogPalette().primaryColor, activeCatalogPalette().secondaryColor);
+  }
+
+  const descricao = String(product.descricao || '').trim();
+  const hasDescricao = descricao.length > 0;
+
+  setTextHex(pdf, textColor);
+  setPdfFont(pdf, 'title', 'bold');
+  pdf.setFontSize(hasDescricao ? 13.5 : 14.2);
+  const nameLines = splitLines(pdf, product.nome, textW, hasDescricao ? 3 : 2);
+  pdf.text(nameLines, textX, hasDescricao ? y + 8.2 : y + 15.5, { lineHeightFactor: 1.03 });
+
+  if (hasDescricao) {
+    setTextHex(pdf, textColor);
+    setPdfFont(pdf, 'body', 'normal');
+    pdf.setFontSize(8.8);
+    const descLines = splitLines(pdf, descricao, textW, 3);
+    pdf.text(descLines, textX, y + 24.2, { lineHeightFactor: 1.06 });
+  }
+
+  const lineY = hasDescricao ? y + h - 15 : y + 24.8;
+  const priceY = hasDescricao ? y + h - 5.5 : y + 32.4;
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.2);
+  pdf.line(textX, lineY, textX + Math.min(27, textW), lineY);
+
+  setTextHex(pdf, accent);
+  setPdfFont(pdf, 'price', 'bold');
+  pdf.setFontSize(hasDescricao ? 12.2 : 12.9);
+  pdf.text(formatCurrency(product.preco), textX, priceY, { maxWidth: textW });
+}
+
+function drawPromoFooter(pdf, promoImage) {
+  if (!state.settings.showPromoFooter) return;
+
+  const y = 270;
+  const h = 27;
+  const bg = normalizeHex(activeCatalogPalette().promoBackgroundColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+
+  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.70);
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.35);
+  pdf.line(10, y + 1.5, 200, y + 1.5);
+
+  setPdfFont(pdf, 'title', 'bold');
+  pdf.setFontSize(12.7);
+  pdf.setTextColor(255, 255, 255);
+  const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\\n').slice(0, 2);
+  pdf.text(lines, 18, y + 10, { maxWidth: 123, lineHeightFactor: 1.12 });
+
+  if (promoImage) {
+    addImageContainedRounded(pdf, promoImage, 148, y + 1.5, 48, 24, 'rodape-promo', 2.2);
+  }
+}
+
 async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
@@ -1555,29 +1766,31 @@ async function registerServiceWorker() {
   }
 }
 
-bindNavigation();
-bindAuth();
-bindProductUi();
-bindCategoryUi();
-bindAssetsUi();
-bindSettingsUi();
-bindPdfUi();
-setThemeVariables();
-registerServiceWorker();
-
-
-// Hotfix pós-carregamento: remove controles quebrados que tinham vazado para a tela de login.
-window.addEventListener('DOMContentLoaded', () => {
-  const login = document.getElementById('loginScreen');
-  const appShell = document.getElementById('appShell');
-  if (login && appShell && !appShell.classList.contains('hidden')) {
-    // O controle de autenticação do app decide quando mostrar. Este bloco só evita vazamento visual inicial.
+function safeInit(label, callback) {
+  try {
+    callback();
+  } catch (error) {
+    console.error(`Falha ao iniciar ${label}.`, error);
   }
-  const select = document.getElementById('catalogBackgroundMode');
+}
+
+safeInit('navegação', bindNavigation);
+safeInit('login', bindAuth);
+safeInit('produtos', bindProductUi);
+safeInit('categorias', bindCategoryUi);
+safeInit('imagens fixas', bindAssetsUi);
+safeInit('aparência do PDF', bindSettingsUi);
+safeInit('PDF', bindPdfUi);
+safeInit('tema', setThemeVariables);
+safeInit('service worker', registerServiceWorker);
+
+window.addEventListener('DOMContentLoaded', () => {
+  const select = $('catalogBackgroundMode');
   if (select) {
     [...select.options].forEach((opt) => {
       if (opt.value === 'custom' || opt.value === 'none') opt.remove();
     });
-    if (!select.value) select.value = 'preset_1';
+    if (!select.value) select.value = DEFAULT_SETTINGS.catalogBackgroundMode;
   }
+  renderCatalogBackgroundPreview();
 });

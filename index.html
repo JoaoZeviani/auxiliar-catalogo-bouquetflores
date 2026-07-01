@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#5f7f5a" />
   <title>Auxiliar de Catálogos</title>
-  <link rel="stylesheet" href="./styles.css?v=layout-fix-20260701" />
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css?v=mobile-pdf-fix-20260701" />
+  <link rel="manifest" href="./manifest.json" />
 </head>
 <body>
   <section id="loginScreen" class="login-screen">
@@ -89,7 +89,7 @@
               <span id="storageBytes">0 B usados</span>
               <span>Limite de referência: 500 MB do backend</span>
             </div>
-            <p class="muted">Estimativa feita pelas imagens cadastradas no Storage. O banco Postgres tem limite separado.</p>
+            <p id="storageNote" class="muted">Estimativa feita pelas imagens cadastradas no Storage.</p>
           </article>
         </div>
       </section>
@@ -162,10 +162,6 @@
             <input id="promoImageInput" type="file" accept="image/*" />
           </article>
         </div>
-        <div class="visually-hidden" aria-hidden="true">
-          <div id="catalogBackgroundPreview"></div>
-          <input id="catalogBackgroundInput" type="file" accept="image/*" tabindex="-1" />
-        </div>
       </section>
 
       <section id="tab-aparencia" class="tab-panel">
@@ -234,25 +230,27 @@
           </div>
 
           <div class="form-grid">
-            <label>Imagem de fundo do catálogo
+            <div class="field-block full-width">
+              <label for="catalogBackgroundMode">Imagem de fundo do catálogo</label>
               <select id="catalogBackgroundMode">
-  <option value="preset_1">Fundo 01 - folhas claras</option>
-  <option value="preset_2">Fundo 02 - eucalipto</option>
-  <option value="preset_3">Fundo 03 - floral rosado</option>
-  <option value="preset_4">Fundo 04 - verde suave</option>
-  <option value="preset_5">Fundo 05 - azul acinzentado</option>
-  <option value="preset_6">Fundo 06 - vermelho escuro e bege</option>
-</select>
-<div class="catalog-background-visualizer">
-  <div class="catalog-background-visualizer-head">
-    <strong>Visualização do fundo escolhido</strong>
-    <span id="catalogBackgroundVisualLabel">Fundo selecionado</span>
-  </div>
-  <div id="catalogBackgroundVisualPreview" class="catalog-background-visual-preview" aria-label="Prévia do fundo do catálogo"></div>
-  <p>As cores do PDF são aplicadas automaticamente conforme o fundo escolhido.</p>
-</div>
-            </label>
+                <option value="preset_1">Fundo 01 - folhas claras</option>
+                <option value="preset_2">Fundo 02 - eucalipto</option>
+                <option value="preset_3">Fundo 03 - floral rosado</option>
+                <option value="preset_4">Fundo 04 - verde suave</option>
+                <option value="preset_5">Fundo 05 - azul acinzentado</option>
+                <option value="preset_6">Fundo 06 - vermelho escuro sutil e bege</option>
+              </select>
+            </div>
           </div>
+
+          <article class="catalog-background-visualizer">
+            <div class="catalog-background-visualizer-head">
+              <strong>Visualização do fundo escolhido</strong>
+              <span id="catalogBackgroundVisualLabel">Fundo selecionado</span>
+            </div>
+            <div id="catalogBackgroundVisualPreview" class="catalog-background-visual-preview" aria-label="Prévia do fundo do catálogo"></div>
+            <p>As cores do PDF são aplicadas automaticamente conforme o fundo escolhido.</p>
+          </article>
 
           <label>Rodapé promocional
             <textarea id="promoFooter" rows="4"></textarea>
@@ -322,6 +320,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="./app.js?v=layout-fix-20260701"></script>
+  <script type="module" src="./app.js?v=mobile-pdf-fix-20260701"></script>
 </body>
 </html>
