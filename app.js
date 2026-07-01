@@ -26,7 +26,7 @@ const DEFAULT_SETTINGS = {
   promoBackgroundColor: '#5f7f5a',
   promoTextColor: '#ffffff',
   promoFooter: 'Adicione chocolate ou pelúcia\npara deixar seu pedido ainda mais especial',
-  hideUnavailablePdf: true,
+  catalogBackgroundMode: 'preset_1', hideUnavailablePdf: true,
   showPromoFooter: true
 };
 
@@ -38,8 +38,23 @@ const DEFAULT_ASSETS = {
   deliveryIconUrl: '', deliveryIconPath: '',
   locationIconUrl: '', locationIconPath: '',
   promoImageUrl: '', promoImagePath: '',
-  importedFixedImages: {}
+  catalogBackgroundUrl: '', catalogBackgroundPath: '', importedFixedImages: {}
 };
+
+const CATALOG_BACKGROUND_PRESETS = {
+  preset_1: './assets/fundos-catalogo/fundo_catalogo_01.jpg',
+  preset_2: './assets/fundos-catalogo/fundo_catalogo_02.jpg',
+  preset_3: './assets/fundos-catalogo/fundo_catalogo_03.jpg',
+  preset_4: './assets/fundos-catalogo/fundo_catalogo_04.jpg',
+  preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg'
+};
+
+function selectedCatalogBackgroundUrl() {
+  const mode = state.settings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode;
+  if (mode === 'none') return '';
+  if (mode === 'custom') return state.assets.catalogBackgroundUrl || CATALOG_BACKGROUND_PRESETS.preset_1;
+  return CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
+}
 
 const state = {
   products: [],
@@ -646,7 +661,7 @@ function bindAssetsUi() {
     ['whatsappIconInput', 'whatsappIconUrl', 'whatsappIconPath', 'icone-whatsapp'],
     ['deliveryIconInput', 'deliveryIconUrl', 'deliveryIconPath', 'icone-entrega'],
     ['locationIconInput', 'locationIconUrl', 'locationIconPath', 'icone-local'],
-    ['promoImageInput', 'promoImageUrl', 'promoImagePath', 'rodape-promocional']
+    ['promoImageInput', 'promoImageUrl', 'promoImagePath', 'rodape-promocional'], ['catalogBackgroundInput', 'catalogBackgroundUrl', 'catalogBackgroundPath', 'fundo-catalogo']
   ];
   map.forEach(([inputId, urlKey, pathKey, folder]) => {
     $(inputId).addEventListener('change', async () => {
@@ -667,6 +682,17 @@ function bindAssetsUi() {
         });
         if (error) throw error;
         state.assets = nextAssets;
+        if (inputId === 'catalogBackgroundInput') {
+          const nextSettings = { ...state.settings, catalogBackgroundMode: 'custom' };
+          const { error: settingsError } = await supabase.from('configuracoes').upsert({
+            id: 'visual',
+            dados: nextSettings,
+            atualizado_em: nowIso()
+          });
+          if (settingsError) throw settingsError;
+          state.settings = nextSettings;
+          if ($('catalogBackgroundMode')) $('catalogBackgroundMode').value = 'custom';
+        }
         await deleteStoragePath(previousPath);
         renderAssetPreviews();
         refreshStorageEstimate();
@@ -688,7 +714,7 @@ function renderAssetPreviews() {
   renderAssetPreview('whatsappIconPreview', state.assets.whatsappIconUrl, 'Nenhum ícone de WhatsApp');
   renderAssetPreview('deliveryIconPreview', state.assets.deliveryIconUrl, 'Nenhum ícone de entrega');
   renderAssetPreview('locationIconPreview', state.assets.locationIconUrl, 'Nenhum ícone de local');
-  renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé');
+  renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé'); renderAssetPreview('catalogBackgroundPreview', state.assets.catalogBackgroundUrl, 'Nenhum fundo personalizado');
 }
 
 function renderBranding() {
@@ -733,7 +759,7 @@ function collectSettingsPayload() {
     pdfCardColor: $('pdfCardColor').value,
     pdfTextColor: $('pdfTextColor').value,
     promoBackgroundColor: $('promoBackgroundColor').value,
-    promoFooter: $('promoFooter').value.trim(),
+    catalogBackgroundMode: $('catalogBackgroundMode').value, promoFooter: $('promoFooter').value.trim(),
     hideUnavailablePdf: $('hideUnavailablePdf').checked,
     showPromoFooter: $('showPromoFooter').checked
   };
@@ -773,8 +799,7 @@ function bindSettingsUi() {
     'businessName', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
     'titleFont', 'bodyFont', 'priceFont',
     'primaryColor', 'secondaryColor', 'backgroundColor', 'accentColor',
-    'pdfPageColor', 'pdfCardColor', 'pdfTextColor', 'promoBackgroundColor',
-    'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
+    'pdfPageColor', 'pdfCardColor', 'pdfTextColor', 'promoBackgroundColor', 'catalogBackgroundMode', 'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
   ];
 
   fields.forEach((id) => {
@@ -811,7 +836,7 @@ function fillSettingsForm() {
   $('pdfPageColor').value = state.settings.pdfPageColor || DEFAULT_SETTINGS.pdfPageColor;
   $('pdfCardColor').value = state.settings.pdfCardColor || DEFAULT_SETTINGS.pdfCardColor;
   $('pdfTextColor').value = state.settings.pdfTextColor || DEFAULT_SETTINGS.pdfTextColor;
-  $('promoBackgroundColor').value = state.settings.promoBackgroundColor || DEFAULT_SETTINGS.promoBackgroundColor;
+  $('promoBackgroundColor').value = state.settings.promoBackgroundColor || DEFAULT_SETTINGS.promoBackgroundColor; $('catalogBackgroundMode').value = state.settings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode;
   $('promoFooter').value = state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter;
   $('hideUnavailablePdf').checked = !!state.settings.hideUnavailablePdf;
   $('showPromoFooter').checked = !!state.settings.showPromoFooter;
@@ -839,8 +864,7 @@ function imageUrlsForStorageEstimate() {
     state.assets.whatsappIconUrl,
     state.assets.deliveryIconUrl,
     state.assets.locationIconUrl,
-    state.assets.promoImageUrl
-  ].forEach((url) => {
+    state.assets.promoImageUrl, state.assets.catalogBackgroundUrl ].forEach((url) => {
     if (url) urls.add(url);
   });
 
@@ -1211,9 +1235,9 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     const deliveryIcon = await getImage(state.assets.deliveryIconUrl);
     const locationIcon = await getImage(state.assets.locationIconUrl);
     const rawPromoImage = await getImage(state.assets.promoImageUrl);
-    const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null;
+    const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null; const catalogBackground = await getImage(selectedCatalogBackgroundUrl());
 
-    drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon });
+    drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground });
 
     const layout = {
       cols: 2,
@@ -1232,7 +1256,7 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     let hasContentOnPage = false;
 
     const drawInternalPage = () => {
-      drawInternalBackground(pdf);
+      drawInternalBackground(pdf, catalogBackground);
       col = 0;
       y = layout.top;
       hasContentOnPage = false;
@@ -1315,6 +1339,24 @@ function imageType(dataUrl = '') {
   return String(dataUrl).toLowerCase().startsWith('data:image/png') ? 'PNG' : 'JPEG';
 }
 
+function drawPdfFullPageBackground(pdf, backgroundImage, fallbackColor = '#ffffff', alias = 'catalog-background') {
+  setFillHex(pdf, fallbackColor);
+  pdf.rect(0, 0, 210, 297, 'F');
+
+  if (!backgroundImage?.dataUrl) return;
+
+  pdf.addImage(
+    backgroundImage.dataUrl,
+    imageType(backgroundImage.dataUrl),
+    0,
+    0,
+    210,
+    297,
+    alias,
+    'FAST'
+  );
+}
+
 function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', centerColor = '#d69a8b') {
   setFillHex(pdf, petalColor);
   const r = 3.2 * scale;
@@ -1327,7 +1369,7 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', center
   pdf.circle(cx, cy, 2.1 * scale, 'F');
 }
 
-function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon }) {
+function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground }) {
   const w = 210, h = 297;
   const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
   const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
@@ -1336,8 +1378,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   const softAccent = mixHex(accent, coverBg, 0.76);
   const softPrimary = mixHex(primary, coverBg, 0.82);
 
-  setFillHex(pdf, coverBg);
-  pdf.rect(0, 0, w, h, 'F');
+  drawPdfFullPageBackground(pdf, catalogBackground, coverBg, 'fundo-capa');
 
   // Fundo decorativo sutil, inspirado em catálogo floral, sem copiar referência.
   setFillHex(pdf, softPrimary);
@@ -1450,10 +1491,9 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   });
 }
 
-function drawInternalBackground(pdf) {
+function drawInternalBackground(pdf, catalogBackground) {
   const bg = internalPageColor();
-  setFillHex(pdf, bg);
-  pdf.rect(0, 0, 210, 297, 'F');
+  drawPdfFullPageBackground(pdf, catalogBackground, bg, 'fundo-interno');
 }
 
 function drawHeader() {

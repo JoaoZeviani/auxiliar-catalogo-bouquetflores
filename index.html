@@ -170,6 +170,13 @@
             <div id="promoImagePreview" class="asset-preview"></div>
             <input type="file" id="promoImageInput" accept="image/*" />
           </article>
+
+        <article class="asset-card">
+          <h3>Fundo do catálogo</h3>
+          <p class="asset-help">Opcional. Envie uma imagem própria para usar como fundo em todas as páginas do PDF.</p>
+          <div id="catalogBackgroundPreview" class="asset-preview wide"></div>
+          <input type="file" id="catalogBackgroundInput" accept="image/*" />
+        </article>
         </div>
       </section>
 
@@ -232,6 +239,20 @@
             <label>Fundo dos produtos<input id="pdfCardColor" type="color" /></label>
             <label>Texto dos produtos<input id="pdfTextColor" type="color" /></label>
             <label>Fundo do rodapé<input id="promoBackgroundColor" type="color" /></label>
+          </div>
+
+          <div class="form-grid">
+            <label>Imagem de fundo do catálogo
+              <select id="catalogBackgroundMode">
+                <option value="preset_1">Fundo 01 - folhas claras</option>
+                <option value="preset_2">Fundo 02 - eucalipto</option>
+                <option value="preset_3">Fundo 03 - floral rosado</option>
+                <option value="preset_4">Fundo 04 - verde suave</option>
+                <option value="preset_5">Fundo 05 - azul acinzentado</option>
+                <option value="custom">Personalizado enviado pela loja</option>
+                <option value="none">Sem imagem de fundo</option>
+              </select>
+            </label>
           </div>
           <label>Rodapé promocional<textarea id="promoFooter" rows="3"></textarea></label>
           <div class="checkbox-row">
