@@ -33,6 +33,9 @@ const DEFAULT_ASSETS = {
   logoUrl: '', logoPath: '',
   coverUrl: '', coverPath: '',
   iconUrl: '', iconPath: '',
+  whatsappIconUrl: '', whatsappIconPath: '',
+  deliveryIconUrl: '', deliveryIconPath: '',
+  locationIconUrl: '', locationIconPath: '',
   promoImageUrl: '', promoImagePath: '',
   importedFixedImages: {}
 };
@@ -52,7 +55,7 @@ const pageData = {
   dashboard: ['Início', 'Resumo dos produtos e opções do catálogo.'],
   produtos: ['Produtos', 'Cadastre, altere, exclua e controle a disponibilidade.'],
   categorias: ['Categorias', 'Organize a ordem das categorias no PDF.'],
-  imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa e ícone decorativo.'],
+  imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem promocional.'],
   aparencia: ['Aparência do PDF', 'Escolha cores, informações da capa e rodapé promocional.'],
   pdf: ['Gerar PDF', 'Crie o catálogo bonito para enviar aos clientes.']
 };
@@ -272,9 +275,21 @@ async function loadSettings() {
 
 function normalizeAssets(raw = {}) {
   const assets = { ...DEFAULT_ASSETS, ...(raw || {}) };
-  const importedPromo = assets.importedFixedImages?.['Imagem Chocolates e Pelúcias'];
+  const imported = assets.importedFixedImages || {};
+  const importedPromo = imported['Imagem Chocolates e Pelúcias'];
+  const importedWhatsapp = imported['Ícone WhatsApp'];
+  const importedDelivery = imported['Ícone Entrega'];
+  const importedLocation = imported['Ícone Endereço'];
+
   if (!assets.promoImageUrl && importedPromo?.url) assets.promoImageUrl = importedPromo.url;
   if (!assets.promoImagePath && importedPromo?.path) assets.promoImagePath = importedPromo.path;
+  if (!assets.whatsappIconUrl && importedWhatsapp?.url) assets.whatsappIconUrl = importedWhatsapp.url;
+  if (!assets.whatsappIconPath && importedWhatsapp?.path) assets.whatsappIconPath = importedWhatsapp.path;
+  if (!assets.deliveryIconUrl && importedDelivery?.url) assets.deliveryIconUrl = importedDelivery.url;
+  if (!assets.deliveryIconPath && importedDelivery?.path) assets.deliveryIconPath = importedDelivery.path;
+  if (!assets.locationIconUrl && importedLocation?.url) assets.locationIconUrl = importedLocation.url;
+  if (!assets.locationIconPath && importedLocation?.path) assets.locationIconPath = importedLocation.path;
+
   return assets;
 }
 
@@ -577,6 +592,9 @@ function bindAssetsUi() {
     ['logoInput', 'logoUrl', 'logoPath', 'logotipo'],
     ['coverInput', 'coverUrl', 'coverPath', 'capa'],
     ['iconInput', 'iconUrl', 'iconPath', 'icone'],
+    ['whatsappIconInput', 'whatsappIconUrl', 'whatsappIconPath', 'icone-whatsapp'],
+    ['deliveryIconInput', 'deliveryIconUrl', 'deliveryIconPath', 'icone-entrega'],
+    ['locationIconInput', 'locationIconUrl', 'locationIconPath', 'icone-local'],
     ['promoImageInput', 'promoImageUrl', 'promoImagePath', 'rodape-promocional']
   ];
   map.forEach(([inputId, urlKey, pathKey, folder]) => {
@@ -613,7 +631,10 @@ function bindAssetsUi() {
 function renderAssetPreviews() {
   renderAssetPreview('logoPreview', state.assets.logoUrl, 'Nenhum logotipo');
   renderAssetPreview('coverPreview', state.assets.coverUrl, 'Nenhuma foto de capa');
-  renderAssetPreview('iconPreview', state.assets.iconUrl, 'Nenhum ícone');
+  renderAssetPreview('iconPreview', state.assets.iconUrl, 'Nenhum ícone decorativo');
+  renderAssetPreview('whatsappIconPreview', state.assets.whatsappIconUrl, 'Nenhum ícone de WhatsApp');
+  renderAssetPreview('deliveryIconPreview', state.assets.deliveryIconUrl, 'Nenhum ícone de entrega');
+  renderAssetPreview('locationIconPreview', state.assets.locationIconUrl, 'Nenhum ícone de local');
   renderAssetPreview('promoImagePreview', state.assets.promoImageUrl, 'Nenhuma imagem de rodapé');
 }
 
@@ -722,6 +743,26 @@ function formatDeliveryFee(value) {
   return `R$ ${raw}`;
 }
 
+function normalizeHex(hex, fallback = '#ffffff') {
+  const value = String(hex || '').trim();
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
+function colorIsWhite(hex) {
+  return normalizeHex(hex).toLowerCase() === '#ffffff';
+}
+
+function internalPageColor() {
+  const pageColor = normalizeHex(state.settings.pdfPageColor, DEFAULT_SETTINGS.pdfPageColor);
+  return colorIsWhite(pageColor) ? normalizeHex(state.settings.backgroundColor, DEFAULT_SETTINGS.backgroundColor) : pageColor;
+}
+
+function readableOnColor(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.58 ? '#263026' : '#ffffff';
+}
+
 function addImageContained(pdf, image, x, y, w, h, alias) {
   if (!image?.dataUrl || !image.width || !image.height) return false;
   const scale = Math.min(w / image.width, h / image.height);
@@ -775,6 +816,33 @@ async function imageUrlToImageData(url) {
   }
 
   return { dataUrl, width, height };
+}
+
+async function removeWhiteBackground(image, tolerance = 246) {
+  if (!image?.dataUrl) return image;
+  try {
+    const img = await loadImage(image.dataUrl);
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = data.data;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      if (r >= tolerance && g >= tolerance && b >= tolerance) {
+        const distanceFromWhite = Math.max(255 - r, 255 - g, 255 - b);
+        pixels[i + 3] = Math.max(0, Math.min(255, distanceFromWhite * 18));
+      }
+    }
+    ctx.putImageData(data, 0, 0);
+    return { dataUrl: canvas.toDataURL('image/png'), width: image.width, height: image.height };
+  } catch (error) {
+    console.warn('Não foi possível remover fundo branco da imagem promocional.', error);
+    return image;
+  }
 }
 
 async function fitImageToBox(dataUrl, width = 1000, height = 760, quality = 0.9, fill = '#ffffff') {
@@ -853,17 +921,21 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     const coverImage = await getImage(state.assets.coverUrl);
     const logoImage = await getImage(state.assets.logoUrl);
     const iconImage = await getImage(state.assets.iconUrl);
-    const promoImage = await getImage(state.assets.promoImageUrl);
+    const whatsappIcon = await getImage(state.assets.whatsappIconUrl);
+    const deliveryIcon = await getImage(state.assets.deliveryIconUrl);
+    const locationIcon = await getImage(state.assets.locationIconUrl);
+    const rawPromoImage = await getImage(state.assets.promoImageUrl);
+    const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null;
 
-    drawCover(pdf, { coverImage, logoImage, iconImage });
+    drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon });
 
     const cardW = 91.5;
-    const cardH = 80;
+    const cardH = 62.5;
     const left = 11;
-    const top = 12;
+    const top = 8;
     const gapX = 5;
-    const gapY = 5;
-    const productsPerPage = 6;
+    const gapY = 3.2;
+    const productsPerPage = 8;
     let slot = 0;
 
     const drawInternalPage = () => {
@@ -928,76 +1000,128 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', center
   pdf.circle(cx, cy, 2.1 * scale, 'F');
 }
 
-function drawCover(pdf, { coverImage, logoImage, iconImage }) {
+function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon }) {
   const w = 210, h = 297;
-  setFillHex(pdf, state.settings.backgroundColor);
+  const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
+  const coverBg = normalizeHex(state.settings.backgroundColor, DEFAULT_SETTINGS.backgroundColor);
+  const cream = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
+
+  setFillHex(pdf, primary);
   pdf.rect(0, 0, w, h, 'F');
 
-  setFillHex(pdf, '#ffffff');
-  pdf.roundedRect(14, 16, 182, 265, 10, 10, 'F');
-  setDrawHex(pdf, state.settings.secondaryColor);
-  pdf.setLineWidth(0.5);
-  pdf.roundedRect(18, 20, 174, 257, 8, 8, 'S');
+  setFillHex(pdf, coverBg);
+  pdf.roundedRect(13, 13, 184, 271, 7, 7, 'F');
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.65);
+  pdf.roundedRect(18, 18, 174, 261, 5, 5, 'S');
+  pdf.setLineWidth(0.25);
+  pdf.line(32, 74, 178, 74);
 
   if (logoImage) {
-    addImageContained(pdf, logoImage, 68, 28, 74, 34, 'logo-capa');
+    addImageContained(pdf, logoImage, 23, 24, 50, 28, 'logo-capa');
   } else if (iconImage) {
-    addImageContained(pdf, iconImage, 90, 29, 30, 30, 'icone-capa');
+    addImageContained(pdf, iconImage, 31, 24, 24, 24, 'icone-capa');
   } else {
-    drawSimpleFlower(pdf, 105, 43, 1.25, state.settings.primaryColor, state.settings.secondaryColor);
+    drawSimpleFlower(pdf, 47, 38, 1.05, primary, accent);
   }
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(33);
-  setTextHex(pdf, state.settings.primaryColor);
-  pdf.text('Catálogo', 105, 78, { align: 'center' });
+  pdf.setFontSize(36);
+  setTextHex(pdf, primary);
+  pdf.text('CATÁLOGO', 183, 39, { align: 'right', maxWidth: 105 });
+  pdf.setFontSize(24);
+  setTextHex(pdf, accent);
+  pdf.text('DE FLORES', 183, 57, { align: 'right', maxWidth: 105 });
 
   const business = String(state.settings.businessName || '').trim();
   if (business) {
     setPdfFont(pdf, 'title', 'bolditalic');
-    pdf.setFontSize(21);
-    setTextHex(pdf, state.settings.accentColor);
-    pdf.text(business, 105, 94, { align: 'center', maxWidth: 155 });
+    pdf.setFontSize(22);
+    setTextHex(pdf, primary);
+    pdf.text(business, 105, 88, { align: 'center', maxWidth: 165 });
   }
 
   if (coverImage) {
-    setDrawHex(pdf, state.settings.secondaryColor);
-    pdf.setLineWidth(0.35);
-    pdf.roundedRect(25, 108, 160, 93, 6, 6, 'S');
-    addImageContained(pdf, coverImage, 29, 112, 152, 85, 'foto-capa');
+    setFillHex(pdf, cream);
+    pdf.roundedRect(27, 101, 156, 98, 5, 5, 'F');
+    setDrawHex(pdf, accent);
+    pdf.setLineWidth(0.4);
+    pdf.roundedRect(29, 103, 152, 94, 4, 4, 'S');
+    addImageContained(pdf, coverImage, 33, 107, 144, 86, 'foto-capa');
+  } else {
+    setFillHex(pdf, cream);
+    pdf.roundedRect(39, 104, 132, 82, 5, 5, 'F');
+    drawSimpleFlower(pdf, 105, 145, 3, primary, accent);
   }
 
   const subtitle = String(state.settings.catalogSubtitle || '').trim();
   if (subtitle) {
     setPdfFont(pdf, 'body', 'italic');
-    pdf.setFontSize(12.5);
-    setTextHex(pdf, state.settings.pdfTextColor || '#263026');
-    pdf.text(subtitle, 105, coverImage ? 218 : 125, { align: 'center', maxWidth: 145 });
+    pdf.setFontSize(15);
+    setTextHex(pdf, primary);
+    pdf.text(subtitle, 105, 214, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
-  const infoLines = [];
   const phone = String(state.settings.businessPhone || '').trim();
   const address = String(state.settings.businessAddress || '').trim();
   const deliveryFee = formatDeliveryFee(state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);
-  if (phone) infoLines.push(`WhatsApp: ${phone}`);
-  if (address) infoLines.push(`Endereço: ${address}`);
-  if (deliveryFee) infoLines.push(`Taxa de entrega: ${deliveryFee}`);
 
-  if (infoLines.length) {
-    setFillHex(pdf, state.settings.pdfPageColor || '#ffffff');
-    setDrawHex(pdf, state.settings.secondaryColor);
-    pdf.setLineWidth(0.35);
-    pdf.roundedRect(30, 232, 150, 31, 6, 6, 'FD');
+  setFillHex(pdf, primary);
+  pdf.roundedRect(18, 232, 174, 36, 6, 6, 'F');
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.45);
+  pdf.roundedRect(18, 232, 174, 36, 6, 6, 'S');
 
+  const items = [
+    { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp', icon: whatsappIcon },
+    { label: 'ENTREGA', value: deliveryFee ? `Taxa ${deliveryFee}` : 'Taxa de entrega', icon: deliveryIcon },
+    { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }
+  ];
+  const itemW = 58;
+  items.forEach((item, index) => {
+    const x = 20 + index * itemW;
+    if (index > 0) {
+      setDrawHex(pdf, accent);
+      pdf.setLineWidth(0.2);
+      pdf.line(x - 2, 238, x - 2, 262);
+    }
+    if (item.icon) {
+      addImageContained(pdf, item.icon, x + 3, 241, 13, 13, `cover-icon-${index}`);
+    } else {
+      setPdfFont(pdf, 'body', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 9.5, 250, { align: 'center' });
+    }
+    setPdfFont(pdf, 'body', 'bold');
+    pdf.setFontSize(8.2);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(item.label, x + 20, 244, { maxWidth: 34 });
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(10.5);
-    setTextHex(pdf, state.settings.pdfTextColor || '#263026');
-    pdf.text(infoLines, 105, 242, { align: 'center', maxWidth: 132, lineHeightFactor: 1.35 });
-  }
+    pdf.setFontSize(7.1);
+    pdf.text(splitLines(pdf, item.value, 34, 2), x + 20, 251, { maxWidth: 34, lineHeightFactor: 1.05 });
+  });
+
+  setPdfFont(pdf, 'title', 'italic');
+  pdf.setFontSize(13);
+  setTextHex(pdf, accent);
+  pdf.text('Feito com carinho para você', 105, 282, { align: 'center' });
 }
 function drawInternalBackground(pdf) {
-  setFillHex(pdf, state.settings.pdfPageColor || '#ffffff');
+  const bg = internalPageColor();
+  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
+  const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
+  setFillHex(pdf, bg);
   pdf.rect(0, 0, 210, 297, 'F');
+
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.35);
+  pdf.roundedRect(6, 5, 198, 261, 4, 4, 'S');
+  setDrawHex(pdf, primary);
+  pdf.setLineWidth(0.16);
+  pdf.line(12, 10, 198, 10);
+  pdf.line(12, 261, 198, 261);
 }
 
 function drawHeader() {
@@ -1009,62 +1133,78 @@ function drawCategoryTitle() {
 }
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
-  setFillHex(pdf, state.settings.pdfCardColor || '#ffffff');
-  setDrawHex(pdf, state.settings.secondaryColor || '#eadfd4');
-  pdf.setLineWidth(0.28);
+  const cardColor = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
+  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
+  const textColor = normalizeHex(state.settings.pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
+  const borderColor = normalizeHex(state.settings.secondaryColor, DEFAULT_SETTINGS.secondaryColor);
+
+  setFillHex(pdf, cardColor);
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.42);
   pdf.roundedRect(x, y, w, h, 4, 4, 'FD');
 
-  const padding = 5;
-  const imageW = 33;
-  const imageH = h - 16;
+  setDrawHex(pdf, borderColor);
+  pdf.setLineWidth(0.16);
+  pdf.roundedRect(x + 1.2, y + 1.2, w - 2.4, h - 2.4, 3.5, 3.5, 'S');
+
+  const padding = 4.8;
+  const imageW = 38;
+  const imageH = h - 10;
   const imageX = x + w - imageW - padding;
-  const imageY = y + 8;
+  const imageY = y + 5;
   const textX = x + padding;
-  const textW = imageX - textX - 5;
+  const textW = imageX - textX - 4;
 
   if (image) {
     addImageContained(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`);
   } else {
-    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.85, state.settings.primaryColor, state.settings.secondaryColor);
+    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.72, state.settings.primaryColor, state.settings.secondaryColor);
   }
 
-  setTextHex(pdf, state.settings.pdfTextColor || '#263026');
+  setTextHex(pdf, textColor);
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(9.7);
+  pdf.setFontSize(10.8);
   const nameLines = splitLines(pdf, product.nome, textW, 3);
-  pdf.text(nameLines, textX, y + 14);
+  pdf.text(nameLines, textX, y + 10.7, { lineHeightFactor: 1.05 });
 
   const descricao = String(product.descricao || '').trim();
   if (descricao) {
-    setTextHex(pdf, state.settings.pdfTextColor || '#263026');
+    setTextHex(pdf, textColor);
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(7.2);
-    const descLines = splitLines(pdf, descricao, textW, 4);
-    pdf.text(descLines, textX, y + 32, { lineHeightFactor: 1.18 });
+    pdf.setFontSize(7.4);
+    const descLines = splitLines(pdf, descricao, textW, 2);
+    pdf.text(descLines, textX, y + 28, { lineHeightFactor: 1.12 });
   }
 
-  setFillHex(pdf, state.settings.accentColor || '#c58f42');
-  pdf.roundedRect(textX, y + h - 15, Math.min(42, textW), 9.5, 4.5, 4.5, 'F');
-  pdf.setTextColor(255, 255, 255);
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.25);
+  pdf.line(textX, y + h - 19, textX + Math.min(34, textW), y + h - 19);
+
+  setTextHex(pdf, accent);
   setPdfFont(pdf, 'price', 'bold');
-  pdf.setFontSize(8.8);
-  pdf.text(formatCurrency(product.preco), textX + Math.min(42, textW) / 2, y + h - 8.7, { align: 'center', maxWidth: Math.min(38, textW - 3) });
+  pdf.setFontSize(12.4);
+  pdf.text(formatCurrency(product.preco), textX, y + h - 8.2, { maxWidth: textW });
 }
 function drawPromoFooter(pdf, promoImage) {
   if (!state.settings.showPromoFooter) return;
   const y = 270;
   const h = 27;
-  setFillHex(pdf, state.settings.promoBackgroundColor || state.settings.primaryColor);
+  const bg = normalizeHex(state.settings.promoBackgroundColor || state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
+  setFillHex(pdf, bg);
   pdf.rect(0, y, 210, h, 'F');
+  setDrawHex(pdf, accent);
+  pdf.setLineWidth(0.35);
+  pdf.line(10, y + 1.5, 200, y + 1.5);
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(11.5);
+  pdf.setFontSize(12.7);
   pdf.setTextColor(255, 255, 255);
   const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);
-  pdf.text(lines, 18, y + 10, { maxWidth: 125, lineHeightFactor: 1.12 });
+  pdf.text(lines, 18, y + 10, { maxWidth: 123, lineHeightFactor: 1.12 });
 
   if (promoImage) {
-    addImageContained(pdf, promoImage, 149, y + 2.5, 45, 22, 'rodape-promo');
+    addImageContained(pdf, promoImage, 148, y + 1.5, 48, 24, 'rodape-promo');
   }
 }
 async function registerServiceWorker() {

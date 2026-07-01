@@ -248,3 +248,34 @@ input[type="color"] { min-height: 46px; padding: 4px; }
   line-height: 1.45;
 }
 button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+/* Garante que nenhuma imagem do app seja cortada ou esticada. */
+.product-card-img,
+.product-image-preview,
+.asset-preview {
+  padding: 10px;
+}
+
+.product-card-img img,
+.product-image-preview img,
+.asset-preview img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  display: block;
+}
+
+.product-card {
+  grid-template-rows: 220px auto;
+}
+
+.product-card-img {
+  min-height: 220px;
+}
+
+.asset-preview.small {
+  min-height: 130px;
+}
