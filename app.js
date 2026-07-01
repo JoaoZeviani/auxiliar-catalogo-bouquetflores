@@ -11,23 +11,23 @@ const DEFAULT_SETTINGS = {
   businessPhone: '',
   businessAddress: '',
   deliveryFee: '25,00',
-  titleFont: 'freestyle',
-  bodyFont: 'arial',
-  priceFont: 'georgia',
-  primaryColor: '#5f7f5a',
-  secondaryColor: '#d69a8b',
-  backgroundColor: '#f7f2ea',
-  accentColor: '#c58f42',
-  pdfPageColor: '#ffffff',
-  pdfCardColor: '#ffffff',
-  pdfCardBorderColor: '#eadfd4',
-  pdfTextColor: '#263026',
-  pdfMutedTextColor: '#666d64',
-  pdfPriceColor: '#c58f42',
-  promoBackgroundColor: '#5f7f5a',
-  promoTextColor: '#ffffff',
+
+  primaryColor: '#7D1225',
+  secondaryColor: '#F5EBE3',
+  backgroundColor: '#F5EBE3',
+  accentColor: '#805630',
+
+  pdfPageColor: '#F5EBE3',
+  pdfCardColor: '#FFF8F2',
+  pdfCardBorderColor: '#B98C62',
+  pdfTextColor: '#2F1D19',
+  pdfMutedTextColor: '#6B5149',
+  pdfPriceColor: '#7D1225',
+
+  promoBackgroundColor: '#7D1225',
+  promoTextColor: '#F5EBE3',
   promoFooter: 'Adicione chocolate ou pelúcia\npara deixar seu pedido ainda mais especial',
-  catalogBackgroundMode: 'preset_1',
+
   hideUnavailablePdf: true,
   showPromoFooter: true
 };
@@ -40,122 +40,33 @@ const DEFAULT_ASSETS = {
   deliveryIconUrl: '', deliveryIconPath: '',
   locationIconUrl: '', locationIconPath: '',
   promoImageUrl: '', promoImagePath: '',
-  catalogBackgroundUrl: '',
-  catalogBackgroundPath: '',
   importedFixedImages: {}
 };
 
-const CATALOG_BACKGROUND_PRESETS = {
-  preset_1: './assets/fundos-catalogo/fundo_catalogo_01.jpg',
-  preset_2: './assets/fundos-catalogo/fundo_catalogo_02.jpg',
-  preset_3: './assets/fundos-catalogo/fundo_catalogo_03.jpg',
-  preset_4: './assets/fundos-catalogo/fundo_catalogo_04.jpg',
-  preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg',
-  preset_6: './assets/fundos-catalogo/fundo_catalogo_06.jpg',
-  preset_7: './assets/fundos-catalogo/fundo_catalogo_07.jpg'
+const FIXED_CATALOG_PALETTE = {
+  primaryColor: '#7D1225',
+  secondaryColor: '#F5EBE3',
+  backgroundColor: '#F5EBE3',
+  accentColor: '#805630',
+  pdfPageColor: '#F5EBE3',
+  pdfCardColor: '#FFF8F2',
+  pdfCardBorderColor: '#B98C62',
+  pdfTextColor: '#2F1D19',
+  pdfMutedTextColor: '#6B5149',
+  pdfPriceColor: '#7D1225',
+  promoBackgroundColor: '#7D1225',
+  promoTextColor: '#F5EBE3'
 };
 
-const CATALOG_BACKGROUND_PALETTES = {
-  preset_1: {
-    primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#758765',
-    pdfPageColor: '#f6f0e7', pdfCardColor: '#fffaf2', pdfCardBorderColor: '#d8c7ad',
-    pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#5f7253',
-    promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff',
-    categoryColor: '#5f7253', categoryAccentColor: '#758765'
-  },
-  preset_2: {
-    primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#7d8d82',
-    pdfPageColor: '#f3f1ea', pdfCardColor: '#fffdf6', pdfCardBorderColor: '#c9d2c5',
-    pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#60766a',
-    promoBackgroundColor: '#60766a', promoTextColor: '#ffffff',
-    categoryColor: '#60766a', categoryAccentColor: '#7d8d82'
-  },
-  preset_3: {
-    primaryColor: '#74615a', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570',
-    pdfPageColor: '#faf1ed', pdfCardColor: '#fff9f6', pdfCardBorderColor: '#e2c3bb',
-    pdfTextColor: '#352b25', pdfMutedTextColor: '#7a6c63', pdfPriceColor: '#a65f5b',
-    promoBackgroundColor: '#74615a', promoTextColor: '#ffffff',
-    categoryColor: '#74615a', categoryAccentColor: '#b87570'
-  },
-  preset_4: {
-    primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#788a72',
-    pdfPageColor: '#eff4ed', pdfCardColor: '#fbfff8', pdfCardBorderColor: '#c8d6c3',
-    pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#597061',
-    promoBackgroundColor: '#597061', promoTextColor: '#ffffff',
-    categoryColor: '#597061', categoryAccentColor: '#788a72'
-  },
-  preset_5: {
-    primaryColor: '#536b78', secondaryColor: '#c4cdd2', backgroundColor: '#eef2f2', accentColor: '#6f8796',
-    pdfPageColor: '#eef2f2', pdfCardColor: '#fbfdfc', pdfCardBorderColor: '#c6d0d4',
-    pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#4e6673',
-    promoBackgroundColor: '#536b78', promoTextColor: '#ffffff',
-    categoryColor: '#536b78', categoryAccentColor: '#6f8796'
-  },
-  preset_6: {
-    primaryColor: '#744b47', secondaryColor: '#d8b8aa', backgroundColor: '#f7ede5', accentColor: '#9b6961',
-    pdfPageColor: '#f7ede5', pdfCardColor: '#fff9f3', pdfCardBorderColor: '#e2c8ba',
-    pdfTextColor: '#392a27', pdfMutedTextColor: '#7a6861', pdfPriceColor: '#7d4541',
-    promoBackgroundColor: '#744b47', promoTextColor: '#ffffff',
-    categoryColor: '#744b47', categoryAccentColor: '#9b6961'
-  },
-  preset_7: {
-    primaryColor: '#784c4c', secondaryColor: '#d8b9aa', backgroundColor: '#f7ede5', accentColor: '#a06a61',
-    pdfPageColor: '#f7ede5', pdfCardColor: '#fff9f3', pdfCardBorderColor: '#e2c8ba',
-    pdfTextColor: '#3a2a28', pdfMutedTextColor: '#7c6a64', pdfPriceColor: '#804743',
-    promoBackgroundColor: '#784c4c', promoTextColor: '#ffffff',
-    categoryColor: '#784c4c', categoryAccentColor: '#a06a61'
-  }
-};
-
-function normalizeCatalogBackgroundMode(mode) {
-  return CATALOG_BACKGROUND_PRESETS[mode] ? mode : 'preset_1';
-}
-function paletteForCatalogMode(mode) {
-  const safeMode = normalizeCatalogBackgroundMode(mode || DEFAULT_SETTINGS.catalogBackgroundMode);
-  return CATALOG_BACKGROUND_PALETTES[safeMode] || CATALOG_BACKGROUND_PALETTES.preset_1;
-}
 function activeCatalogPalette() {
-  const mode = normalizeCatalogBackgroundMode((state && state.settings && state.settings.catalogBackgroundMode) || DEFAULT_SETTINGS.catalogBackgroundMode);
-  return paletteForCatalogMode(mode);
-}
-function applyCatalogPaletteToSettings(settings) {
-  const safeSettings = settings || {};
-  const mode = normalizeCatalogBackgroundMode(safeSettings.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
-  const palette = paletteForCatalogMode(mode);
-  return { ...safeSettings, catalogBackgroundMode: mode, ...palette };
-}
-function selectedCatalogBackgroundUrl() {
-  const mode = normalizeCatalogBackgroundMode(state?.settings?.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
-  return CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
+  return FIXED_CATALOG_PALETTE;
 }
 
-function catalogBackgroundLabel(mode) {
-  const labels = {
-    preset_1: 'Fundo 01 - folhas claras',
-    preset_2: 'Fundo 02 - eucalipto',
-    preset_3: 'Fundo 03 - floral rosado',
-    preset_4: 'Fundo 04 - verde suave',
-    preset_5: 'Fundo 05 - azul acinzentado',
-    preset_6: 'Fundo 06 - vinho suave e bege',
-    preset_7: 'Fundo 07 - floral vinho e bege'
+function applyCatalogPaletteToSettings(settings = {}) {
+  return {
+    ...settings,
+    ...FIXED_CATALOG_PALETTE
   };
-  return labels[normalizeCatalogBackgroundMode(mode)] || labels.preset_1;
-}
-
-function renderCatalogBackgroundPreview() {
-  const preview = $('catalogBackgroundVisualPreview');
-  const label = $('catalogBackgroundVisualLabel');
-  if (!preview && !label) return;
-
-  const mode = normalizeCatalogBackgroundMode(state?.settings?.catalogBackgroundMode || DEFAULT_SETTINGS.catalogBackgroundMode);
-  const url = CATALOG_BACKGROUND_PRESETS[mode] || CATALOG_BACKGROUND_PRESETS.preset_1;
-
-  if (preview) {
-    preview.style.backgroundImage = `url("${url}")`;
-    preview.style.backgroundPosition = 'center bottom';
-    preview.textContent = '';
-  }
-  if (label) label.textContent = catalogBackgroundLabel(mode);
 }
 
 const state = {
@@ -175,13 +86,13 @@ const pageData = {
   produtos: ['Produtos', 'Cadastre, altere, exclua e controle a disponibilidade.'],
   categorias: ['Categorias', 'Organize a ordem das categorias no PDF.'],
   imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem promocional.'],
-  aparencia: ['Aparência do PDF', 'Escolha informações da capa, fundo, fontes e rodapé promocional.']
+  aparencia: ['Aparência do PDF', 'Defina informações da capa e o rodapé promocional.']
 };
 
 function toast(message, type = 'ok') {
   const el = $('toast');
   el.textContent = message;
-  el.style.background = type === 'error' ? '#8f2f2f' : '#263026';
+  el.style.background = type === 'error' ? '#9c2538' : '#7D1225';
   el.classList.add('show');
   window.clearTimeout(toast._timer);
   toast._timer = window.setTimeout(() => el.classList.remove('show'), 3600);
@@ -838,8 +749,6 @@ function setExistingInputValue(id, value) {
   else el.value = value ?? '';
 }
 function collectSettingsPayload() {
-  const catalogBackgroundMode = normalizeCatalogBackgroundMode(settingInputValue('catalogBackgroundMode', DEFAULT_SETTINGS.catalogBackgroundMode));
-  const palette = paletteForCatalogMode(catalogBackgroundMode);
   return {
     businessName: settingInputValue('businessName', DEFAULT_SETTINGS.businessName),
     catalogTitle: settingInputValue('catalogTitle', DEFAULT_SETTINGS.catalogTitle),
@@ -847,23 +756,18 @@ function collectSettingsPayload() {
     businessPhone: settingInputValue('businessPhone', DEFAULT_SETTINGS.businessPhone),
     businessAddress: settingInputValue('businessAddress', DEFAULT_SETTINGS.businessAddress),
     deliveryFee: settingInputValue('deliveryFee', DEFAULT_SETTINGS.deliveryFee),
-    titleFont: settingInputValue('titleFont', DEFAULT_SETTINGS.titleFont),
-    bodyFont: settingInputValue('bodyFont', DEFAULT_SETTINGS.bodyFont),
-    priceFont: settingInputValue('priceFont', DEFAULT_SETTINGS.priceFont),
-    ...palette,
-    catalogBackgroundMode,
+    ...FIXED_CATALOG_PALETTE,
     promoFooter: settingInputValue('promoFooter', DEFAULT_SETTINGS.promoFooter),
     hideUnavailablePdf: settingInputValue('hideUnavailablePdf', DEFAULT_SETTINGS.hideUnavailablePdf),
     showPromoFooter: settingInputValue('showPromoFooter', DEFAULT_SETTINGS.showPromoFooter)
   };
 }
 let settingsAutoSaveTimer = null;
-async function saveSettingsAutomatically() {
+async async function saveSettingsAutomatically() {
   if (!state.supabaseReady) return;
   const payload = collectSettingsPayload();
-  state.settings = { ...DEFAULT_SETTINGS, ...payload };
+  state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...payload });
   setThemeVariables();
-  updateFontSamples();
 
   const { error } = await supabase.from('configuracoes').upsert({
     id: 'visual',
@@ -879,9 +783,8 @@ async function saveSettingsAutomatically() {
 
 function scheduleSettingsAutoSave() {
   const payload = collectSettingsPayload();
-  state.settings = { ...DEFAULT_SETTINGS, ...payload };
+  state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...payload });
   setThemeVariables();
-  updateFontSamples();
   window.clearTimeout(settingsAutoSaveTimer);
   settingsAutoSaveTimer = window.setTimeout(saveSettingsAutomatically, 500);
 }
@@ -889,26 +792,23 @@ function scheduleSettingsAutoSave() {
 function bindSettingsUi() {
   const fields = [
     'businessName', 'catalogTitle', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
-    'titleFont', 'bodyFont', 'priceFont', 'catalogBackgroundMode', 'promoFooter',
-    'hideUnavailablePdf', 'showPromoFooter'
+    'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
   ];
+
   fields.forEach((id) => {
     const el = $(id);
     if (!el) return;
-    const eventName = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
-    el.addEventListener(eventName, () => {
-      if (id === 'titleFont' || id === 'bodyFont' || id === 'priceFont') updateFontSamples();
-      if (id === 'catalogBackgroundMode') {
-        state.settings = applyCatalogPaletteToSettings({ ...state.settings, catalogBackgroundMode: normalizeCatalogBackgroundMode(el.value) });
-        setThemeVariables();
-        renderCatalogBackgroundPreview();
-      }
-      scheduleSettingsAutoSave();
-    });
+    const eventName = el.type === 'checkbox' ? 'change' : 'input';
+    el.addEventListener(eventName, scheduleSettingsAutoSave);
   });
+
   const form = $('settingsForm');
-  if (form) form.addEventListener('submit', (event) => { event.preventDefault(); saveSettingsAutomatically(); });
-  updateFontSamples();
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      saveSettingsAutomatically();
+    });
+  }
 }
 function fillSettingsForm() {
   state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...state.settings });
@@ -918,15 +818,9 @@ function fillSettingsForm() {
   setExistingInputValue('businessPhone', state.settings.businessPhone || '');
   setExistingInputValue('businessAddress', state.settings.businessAddress || '');
   setExistingInputValue('deliveryFee', state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);
-  setExistingInputValue('titleFont', state.settings.titleFont || DEFAULT_SETTINGS.titleFont);
-  setExistingInputValue('bodyFont', state.settings.bodyFont || DEFAULT_SETTINGS.bodyFont);
-  setExistingInputValue('priceFont', state.settings.priceFont || DEFAULT_SETTINGS.priceFont);
-  setExistingInputValue('catalogBackgroundMode', normalizeCatalogBackgroundMode(state.settings.catalogBackgroundMode));
-  renderCatalogBackgroundPreview();
   setExistingInputValue('promoFooter', state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter);
   setExistingInputValue('hideUnavailablePdf', !!state.settings.hideUnavailablePdf);
   setExistingInputValue('showPromoFooter', !!state.settings.showPromoFooter);
-  updateFontSamples();
 }
 function renderStats() {
   $('statTotal').textContent = state.products.length;
@@ -1072,81 +966,25 @@ function mixHex(a, b, amount = 0.5) {
 }
 
 
-const FONT_CSS_MAP = {
-  freestyle: "'Freestyle Script', 'Brush Script MT', cursive",
-  playfair: "'Playfair Display', Georgia, serif",
-  georgia: "Georgia, serif",
-  times: "'Times New Roman', Times, serif",
-  arial: "Arial, sans-serif",
-  helvetica: "Helvetica, Arial, sans-serif",
-  verdana: "Verdana, sans-serif",
-  courier: "'Courier New', Courier, monospace"
+const PDF_FONTS = {
+  title: 'Magnólia Script',
+  body: 'Clear Sans',
+  price: 'Clear Sans'
 };
-
-function updateFontSamples() {
-  const pairs = [
-    ['titleFont', 'titleFontSample'],
-    ['bodyFont', 'bodyFontSample'],
-    ['priceFont', 'priceFontSample']
-  ];
-  pairs.forEach(([selectId, sampleId]) => {
-    const select = $(selectId);
-    const sample = $(sampleId);
-    if (!select || !sample) return;
-    const family = FONT_CSS_MAP[select.value] || FONT_CSS_MAP.arial;
-    sample.style.fontFamily = family;
-    sample.dataset.font = select.value;
-    select.style.fontFamily = family;
-  });
-}
-
-const PDF_FONT_MAP = {
-  freestyle: 'times',
-  playfair: 'times',
-  georgia: 'times',
-  times: 'times',
-  arial: 'helvetica',
-  helvetica: 'helvetica',
-  verdana: 'helvetica',
-  courier: 'courier'
-};
-
-const PDF_FONT_SIZE_SCALE = {
-  freestyle: 1.12,
-  playfair: 1.02,
-  georgia: 1.00,
-  times: 1.02,
-  arial: 1.00,
-  helvetica: 1.00,
-  verdana: 0.92,
-  courier: 0.88
-};
-
-function pdfFontScale(kind = 'body') {
-  const key = kind === 'title' ? 'titleFont' : kind === 'price' ? 'priceFont' : 'bodyFont';
-  const selected = state.settings[key] || DEFAULT_SETTINGS[key];
-  return PDF_FONT_SIZE_SCALE[selected] || 1;
-}
 
 function setPdfFontSize(pdf, size, kind = 'body') {
-  pdf.setFontSize(size * pdfFontScale(kind));
-}
-
-function safePdfFont(font) {
-  return PDF_FONT_MAP[font] || (['helvetica', 'times', 'courier'].includes(font) ? font : 'helvetica');
+  const scale = kind === 'title' ? 1.08 : 1;
+  pdf.setFontSize(size * scale);
 }
 
 function setPdfFont(pdf, kind = 'body', style = 'normal') {
-  const key = kind === 'title' ? 'titleFont' : kind === 'price' ? 'priceFont' : 'bodyFont';
-  const selected = state.settings[key] || DEFAULT_SETTINGS[key];
-  let finalStyle = style;
-
-  if (selected === 'freestyle') {
-    if (style === 'bold') finalStyle = 'bolditalic';
-    else if (style === 'normal') finalStyle = 'italic';
+  if (kind === 'title') {
+    const finalStyle = style === 'bold' ? 'bolditalic' : style === 'normal' ? 'italic' : style;
+    pdf.setFont('times', finalStyle);
+    return;
   }
 
-  pdf.setFont(safePdfFont(selected), finalStyle);
+  pdf.setFont('helvetica', style);
 }
 
 function formatDeliveryFee(value) {
@@ -1173,7 +1011,7 @@ function internalPageColor() {
 function readableOnColor(hex) {
   const [r, g, b] = hexToRgb(hex);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? '#263026' : '#ffffff';
+  return luminance > 0.58 ? '#2F1D19' : '#ffffff';
 }
 
 function containedImageRect(image, x, y, w, h) {
@@ -1429,9 +1267,7 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     const locationIcon = await getImage(state.assets.locationIconUrl);
     const rawPromoImage = await getImage(state.assets.promoImageUrl);
     const promoImage = rawPromoImage ? await removeWhiteBackground(rawPromoImage) : null;
-    const catalogBackground = await getImage(selectedCatalogBackgroundUrl());
-
-    drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground });
+drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon });
 
     const layout = {
       cols: 2,
@@ -1450,7 +1286,7 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     let hasContentOnPage = false;
 
     const drawInternalPage = () => {
-      drawInternalBackground(pdf, catalogBackground);
+      drawInternalBackground(pdf);
       col = 0;
       y = layout.top;
       hasContentOnPage = false;
@@ -1479,7 +1315,7 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     if (!categoryGroups.length) {
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(20);
-      setTextHex(pdf, state.settings.primaryColor);
+      setTextHex(pdf, FIXED_CATALOG_PALETTE.primaryColor);
       pdf.text('Nenhum produto disponível para o PDF.', 105, 130, { align: 'center' });
       drawPromoFooter(pdf, promoImage);
       pdf.save(pdfFileName());
@@ -1533,24 +1369,6 @@ function imageType(dataUrl = '') {
   return String(dataUrl).toLowerCase().startsWith('data:image/png') ? 'PNG' : 'JPEG';
 }
 
-function drawPdfFullPageBackground(pdf, backgroundImage, fallbackColor = '#ffffff', alias = 'catalog-background') {
-  setFillHex(pdf, fallbackColor);
-  pdf.rect(0, 0, 210, 297, 'F');
-
-  if (!backgroundImage?.dataUrl) return;
-
-  pdf.addImage(
-    backgroundImage.dataUrl,
-    imageType(backgroundImage.dataUrl),
-    0,
-    0,
-    210,
-    297,
-    alias,
-    'FAST'
-  );
-}
-
 function withPdfOpacity(pdf, opacity, callback) {
   let didSave = false;
   try {
@@ -1578,7 +1396,7 @@ function fillRoundedRectWithOpacity(pdf, x, y, w, h, rx, ry, color, opacity = 0.
   withPdfOpacity(pdf, opacity, () => pdf.roundedRect(x, y, w, h, rx, ry, 'F'));
 }
 
-function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', centerColor = '#d69a8b') {
+function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#7D1225', centerColor = '#805630') {
   setFillHex(pdf, petalColor);
   const r = 3.2 * scale;
   pdf.circle(cx, cy - 5 * scale, r, 'F');
@@ -1590,23 +1408,33 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', center
   pdf.circle(cx, cy, 2.1 * scale, 'F');
 }
 
-function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon, catalogBackground }) {
+function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon }) {
   const w = 210;
-  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
-  const coverBg = normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor);
-  const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');
-  const softAccent = mixHex(accent, coverBg, 0.72);
+  const primary = '#7D1225';
+  const accent = '#805630';
+  const coverBg = '#F5EBE3';
+  const cardColor = '#FFF8F2';
+  const softAccent = mixHex(accent, coverBg, 0.55);
 
-  drawPdfFullPageBackground(pdf, catalogBackground, coverBg, 'fundo-capa');
+  setFillHex(pdf, coverBg);
+  pdf.rect(0, 0, 210, 297, 'F');
 
-  fillRoundedRectWithOpacity(pdf, 16, 17, 178, 263, 7, 7, cardColor, 0.84);
+  setDrawHex(pdf, mixHex(primary, coverBg, 0.58));
+  pdf.setLineWidth(0.45);
+  pdf.roundedRect(13, 14, 184, 269, 7, 7, 'S');
+
+  setDrawHex(pdf, mixHex(accent, coverBg, 0.42));
+  pdf.setLineWidth(0.25);
+  pdf.roundedRect(20, 21, 170, 255, 4, 4, 'S');
+
+  fillRoundedRectWithOpacity(pdf, 16, 17, 178, 263, 7, 7, cardColor, 0.78);
+
   setDrawHex(pdf, softAccent);
   pdf.setLineWidth(0.35);
   pdf.roundedRect(20, 21, 170, 255, 5, 5, 'S');
 
   if (logoImage) {
-    addImageContained(pdf, logoImage, 34, 36, 142, 60, 'logo-capa');
+    addImageContained(pdf, logoImage, 34, 35, 142, 61, 'logo-capa');
   } else if (iconImage) {
     addImageContained(pdf, iconImage, 91, 40, 28, 28, 'icone-capa');
   } else {
@@ -1615,16 +1443,16 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
 
   const catalogTitle = String(state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle).trim();
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(29);
+  pdf.setFontSize(30);
   setTextHex(pdf, primary);
   pdf.text(splitLines(pdf, catalogTitle, 150, 2), 105, 110, { align: 'center', maxWidth: 150, lineHeightFactor: 1.03 });
 
   setDrawHex(pdf, accent);
   pdf.setLineWidth(0.32);
-  pdf.line(60, 120, 150, 120);
+  pdf.line(58, 121, 152, 121);
 
   if (coverImage) {
-    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#ffffff', 0.74);
+    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#ffffff', 0.70);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.35);
     pdf.roundedRect(28, 128, 154, 66, 5, 5, 'S');
@@ -1634,8 +1462,8 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   const subtitle = String(state.settings.catalogSubtitle || '').trim();
   if (subtitle) {
     setPdfFont(pdf, 'body', 'italic');
-    pdf.setFontSize(14.2);
-    setTextHex(pdf, primary);
+    pdf.setFontSize(14.5);
+    setTextHex(pdf, '#2F1D19');
     pdf.text(subtitle, 105, coverImage ? 214 : 170, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
@@ -1658,7 +1486,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     const boxY = 232;
     const boxH = 31;
 
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.78);
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.75);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.22);
     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
@@ -1675,20 +1503,26 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     }
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 8.0, 'body');
+    setPdfFontSize(pdf, 8.2, 'body');
     setTextHex(pdf, primary);
     pdf.text(item.label, x + 18, boxY + 9.3, { maxWidth: 33 });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 7.15, 'body');
-    setTextHex(pdf, normalizeHex(activeCatalogPalette().pdfTextColor, '#3f4a42'));
+    setPdfFontSize(pdf, 7.4, 'body');
+    setTextHex(pdf, '#6B5149');
     pdf.text(splitLines(pdf, item.value, 34, 3), x + 18, boxY + 16.4, { maxWidth: 34, lineHeightFactor: 1.04 });
   });
 }
 
-function drawInternalBackground(pdf, catalogBackground) {
+function drawInternalBackground(pdf) {
   const bg = internalPageColor();
-  drawPdfFullPageBackground(pdf, catalogBackground, bg, 'fundo-interno');
+  setFillHex(pdf, bg);
+  pdf.rect(0, 0, 210, 297, 'F');
+
+  setDrawHex(pdf, mixHex('#805630', bg, 0.72));
+  pdf.setLineWidth(0.18);
+  pdf.line(8, 7, 202, 7);
+  pdf.line(8, 290, 202, 290);
 }
 
 function drawHeader() {
@@ -1696,11 +1530,11 @@ function drawHeader() {
 }
 
 function drawCategoryTitle(pdf, title, x, y, width) {
-  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const primary = '#7D1225';
+  const accent = '#805630';
   const bg = internalPageColor();
-  const headerBg = mixHex(primary, bg, 0.055);
-  const border = mixHex(accent, bg, 0.13);
+  const headerBg = mixHex(primary, bg, 0.08);
+  const border = mixHex(accent, bg, 0.24);
   const fullText = String(title || 'Produtos').toUpperCase();
 
   const paddingX = 5;
@@ -1721,20 +1555,19 @@ function drawCategoryTitle(pdf, title, x, y, width) {
     while (text.length > 4 && pdf.getTextWidth(text + '...') > maxTextWidth) {
       text = text.slice(0, -1).trim();
     }
-    text = text + '...';
+    text += '...';
   }
 
-  const textWidth = pdf.getTextWidth(text);
-  const labelWidth = Math.min(maxBoxWidth, Math.max(34, textWidth + paddingX * 2));
+  const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2));
   const boxHeight = 10.8;
 
-  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.78);
+  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.80);
   setDrawHex(pdf, border);
-  pdf.setLineWidth(0.2);
+  pdf.setLineWidth(0.22);
   pdf.roundedRect(x, y, labelWidth, boxHeight, 2.8, 2.8, 'S');
 
-  setFillHex(pdf, mixHex(accent, bg, 0.075));
-  withPdfOpacity(pdf, 0.32, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
+  setFillHex(pdf, mixHex(accent, bg, 0.10));
+  withPdfOpacity(pdf, 0.35, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
 
   setTextHex(pdf, '#000000');
   pdf.text(text, x + paddingX, y + 7.2);
@@ -1748,11 +1581,11 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
 }
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
-  const cardColor = normalizeHex(activeCatalogPalette().pdfCardColor, '#fffaf1');
-  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
-  const textColor = normalizeHex(activeCatalogPalette().pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
+  const cardColor = '#FFF8F2';
+  const accent = '#805630';
+  const textColor = '#2F1D19';
   const bg = internalPageColor();
-  const softBorder = mixHex(accent, bg, 0.48);
+  const softBorder = mixHex(accent, bg, 0.44);
 
   fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);
   setDrawHex(pdf, softBorder);
@@ -1768,10 +1601,10 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const textW = Math.max(34, imageX - textX - 1.2);
 
   if (image) {
-    fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#ffffff', 0.64);
-    addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 3.2);
+    fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#ffffff', 0.62);
+    addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 3.4);
   } else {
-    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, activeCatalogPalette().primaryColor, activeCatalogPalette().secondaryColor);
+    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, '#7D1225', '#805630');
   }
 
   const descricao = String(product.descricao || '').trim();
@@ -1797,7 +1630,7 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   pdf.setLineWidth(0.2);
   pdf.line(textX, lineY, textX + Math.min(27, textW), lineY);
 
-  setTextHex(pdf, accent);
+  setTextHex(pdf, '#7D1225');
   setPdfFont(pdf, 'price', 'bold');
   pdf.setFontSize(hasDescricao ? 12.2 : 12.9);
   pdf.text(formatCurrency(product.preco), textX, priceY, { maxWidth: textW });
@@ -1808,18 +1641,18 @@ function drawPromoFooter(pdf, promoImage) {
 
   const y = 270;
   const h = 27;
-  const bg = normalizeHex(activeCatalogPalette().promoBackgroundColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const bg = '#7D1225';
+  const accent = '#805630';
 
-  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.70);
+  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.72);
   setDrawHex(pdf, accent);
   pdf.setLineWidth(0.35);
   pdf.line(10, y + 1.5, 200, y + 1.5);
 
   setPdfFont(pdf, 'title', 'bold');
   pdf.setFontSize(12.7);
-  pdf.setTextColor(255, 255, 255);
-  const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\\n').slice(0, 2);
+  setTextHex(pdf, '#F5EBE3');
+  const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);
   pdf.text(lines, 18, y + 10, { maxWidth: 123, lineHeightFactor: 1.12 });
 
   if (promoImage) {
@@ -1879,13 +1712,3 @@ safeInit('PDF', bindPdfUi);
 safeInit('tema', setThemeVariables);
 safeInit('service worker', registerServiceWorker);
 
-window.addEventListener('DOMContentLoaded', () => {
-  const select = $('catalogBackgroundMode');
-  if (select) {
-    [...select.options].forEach((opt) => {
-      if (opt.value === 'custom' || opt.value === 'none') opt.remove();
-    });
-    if (!select.value) select.value = DEFAULT_SETTINGS.catalogBackgroundMode;
-  }
-  renderCatalogBackgroundPreview();
-});

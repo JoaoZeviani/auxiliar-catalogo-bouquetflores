@@ -1,32 +1,37 @@
 # Auxiliar de Catálogos Bouquet Flores
 
-Aplicativo web para montar e gerar catálogos em PDF da floricultura.
+Aplicativo web para montar e atualizar o catálogo de produtos da floricultura.
 
 ## O que o programa faz
 
 - Cadastra produtos com nome, preço, descrição, categoria, disponibilidade e imagem.
 - Permite alterar, excluir e marcar produtos como disponíveis ou indisponíveis.
-- Organiza produtos por categoria e permite ordenar as categorias.
-- Mostra um painel inicial com resumo do catálogo e uso estimado de armazenamento.
-- Permite cadastrar imagens fixas da loja, como logotipo, foto da capa, ícones e imagem promocional.
-- Gera um PDF pronto para enviar aos clientes, com capa, fundo visual, produtos por categoria, preços e rodapé promocional.
-- Permite escolher entre fundos prontos para o catálogo; as cores do PDF são ajustadas automaticamente ao fundo escolhido.
-- Pode ocultar produtos indisponíveis no PDF.
-- Funciona no navegador do computador e também no celular.
+- Organiza produtos por categoria.
+- Mostra um painel inicial com resumo dos produtos e uso estimado do armazenamento.
+- Salva logotipo, imagem de capa, ícones e imagem do rodapé promocional.
+- Gera um PDF do catálogo pronto para enviar aos clientes.
+
+## Visual do catálogo
+
+O visual é padronizado para manter todos os PDFs com a mesma identidade:
+
+- Marsala: `#7D1225`
+- Creme: `#F5EBE3`
+- Bronze: `#805630`
+
+As fontes usadas no app e no catálogo são:
+
+- **Magnólia Script** para títulos e destaques.
+- **Clear Sans** para textos, informações e preços.
 
 ## Como usar
 
-1. Acesse o aplicativo pelo link publicado no GitHub Pages.
-2. Entre com a senha da loja.
-3. Cadastre ou atualize produtos e categorias.
+1. Entre no app com a senha da loja.
+2. Cadastre ou edite as categorias.
+3. Cadastre os produtos e suas imagens.
 4. Ajuste as informações da capa na aba **Aparência do PDF**.
-5. Cadastre logotipo e imagens fixas na aba **Imagens fixas**.
-6. Clique em **Gerar PDF**.
+5. Use **Gerar PDF** para criar o catálogo.
 
-## Uso pelo celular
+## Celular
 
-O aplicativo foi ajustado para telas pequenas. No celular, é possível cadastrar produtos, alterar categorias, trocar imagens e gerar o PDF pelo navegador.
-
-## Observação
-
-O cálculo de armazenamento é uma estimativa feita a partir das imagens cadastradas e dos dados do catálogo. Ele serve como referência para acompanhar se o catálogo está ficando pesado demais.
+O app foi feito para funcionar também no celular, com layout adaptado para telas menores.

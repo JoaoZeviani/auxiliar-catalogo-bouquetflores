@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#5f7f5a" />
+  <meta name="theme-color" content="#7D1225" />
   <title>Auxiliar de Catálogos</title>
   <link rel="stylesheet" href="./styles.css?v=mobile-pdf-fix-20260701" />
   <link rel="manifest" href="./manifest.json" />
@@ -187,70 +187,14 @@
             </label>
           </div>
 
-          <div class="form-grid font-grid">
-            <label>Fonte dos títulos
-              <select id="titleFont" class="font-select">
-                <option value="freestyle">Freestyle Script</option>
-                <option value="playfair">Playfair Display</option>
-                <option value="georgia">Georgia</option>
-                <option value="times">Times New Roman</option>
-                <option value="arial">Arial</option>
-                <option value="helvetica">Helvetica</option>
-                <option value="verdana">Verdana</option>
-                <option value="courier">Courier New</option>
-              </select>
-              <span id="titleFontSample" class="font-sample">Bouquet Flores</span>
-            </label>
-            <label>Fonte dos textos
-              <select id="bodyFont" class="font-select">
-                <option value="arial">Arial</option>
-                <option value="helvetica">Helvetica</option>
-                <option value="verdana">Verdana</option>
-                <option value="georgia">Georgia</option>
-                <option value="times">Times New Roman</option>
-                <option value="courier">Courier New</option>
-                <option value="freestyle">Freestyle Script</option>
-                <option value="playfair">Playfair Display</option>
-              </select>
-              <span id="bodyFontSample" class="font-sample">Flores para encantar</span>
-            </label>
-            <label>Fonte dos preços
-              <select id="priceFont" class="font-select">
-                <option value="georgia">Georgia</option>
-                <option value="times">Times New Roman</option>
-                <option value="arial">Arial</option>
-                <option value="helvetica">Helvetica</option>
-                <option value="freestyle">Freestyle Script</option>
-                <option value="verdana">Verdana</option>
-                <option value="playfair">Playfair Display</option>
-                <option value="courier">Courier New</option>
-              </select>
-              <span id="priceFontSample" class="font-sample">R$ 120,00</span>
-            </label>
-          </div>
-
-          <div class="form-grid">
-            <div class="field-block full-width">
-              <label for="catalogBackgroundMode">Imagem de fundo do catálogo</label>
-              <select id="catalogBackgroundMode">
-                <option value="preset_1">Fundo 01 - folhas claras</option>
-                <option value="preset_2">Fundo 02 - eucalipto</option>
-                <option value="preset_3">Fundo 03 - floral rosado</option>
-                <option value="preset_4">Fundo 04 - verde suave</option>
-                <option value="preset_5">Fundo 05 - azul acinzentado</option>
-                <option value="preset_6">Fundo 06 - vinho suave e bege</option>
-                <option value="preset_7">Fundo 07 - floral vinho e bege</option>
-              </select>
+          <article class="fixed-style-note">
+            <strong>Visual fixo do catálogo</strong>
+            <p>O app e o PDF usam a paleta Marsala, Creme e Bronze, com títulos em Magnólia Script e textos em Clear Sans. Essas opções ficam padronizadas para manter o catálogo sempre coerente.</p>
+            <div class="palette-preview" aria-label="Paleta fixa do catálogo">
+              <span style="background:#7D1225">Marsala</span>
+              <span style="background:#F5EBE3; color:#2F1D19; border:1px solid #B98C62">Creme</span>
+              <span style="background:#805630">Bronze</span>
             </div>
-          </div>
-
-          <article class="catalog-background-visualizer">
-            <div class="catalog-background-visualizer-head">
-              <strong>Visualização do fundo escolhido</strong>
-              <span id="catalogBackgroundVisualLabel">Fundo selecionado</span>
-            </div>
-            <div id="catalogBackgroundVisualPreview" class="catalog-background-visual-preview" aria-label="Prévia do fundo do catálogo"></div>
-            <p>As cores do PDF são aplicadas automaticamente conforme o fundo escolhido.</p>
           </article>
 
           <label>Rodapé promocional
@@ -260,21 +204,6 @@
           <div class="checkbox-row">
             <label><input id="hideUnavailablePdf" type="checkbox" /> Ocultar produtos indisponíveis do PDF</label>
             <label><input id="showPromoFooter" type="checkbox" /> Mostrar rodapé promocional nas páginas internas</label>
-          </div>
-
-          <div class="visually-hidden" aria-hidden="true">
-            <input id="primaryColor" type="color" value="#5f7f5a" tabindex="-1" />
-            <input id="secondaryColor" type="color" value="#d69a8b" tabindex="-1" />
-            <input id="backgroundColor" type="color" value="#f7f2ea" tabindex="-1" />
-            <input id="accentColor" type="color" value="#c58f42" tabindex="-1" />
-            <input id="pdfPageColor" type="color" value="#ffffff" tabindex="-1" />
-            <input id="pdfCardColor" type="color" value="#ffffff" tabindex="-1" />
-            <input id="pdfCardBorderColor" type="color" value="#eadfd4" tabindex="-1" />
-            <input id="pdfTextColor" type="color" value="#263026" tabindex="-1" />
-            <input id="pdfMutedTextColor" type="color" value="#666d64" tabindex="-1" />
-            <input id="pdfPriceColor" type="color" value="#c58f42" tabindex="-1" />
-            <input id="promoBackgroundColor" type="color" value="#5f7f5a" tabindex="-1" />
-            <input id="promoTextColor" type="color" value="#ffffff" tabindex="-1" />
           </div>
         </form>
       </section>
