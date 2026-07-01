@@ -715,46 +715,84 @@ function renderAssetPreview(id, url, emptyText) {
   $(id).innerHTML = url ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(emptyText)}">` : emptyText;
 }
 
-function bindSettingsUi() {
-  ['titleFont', 'bodyFont', 'priceFont'].forEach((id) => {
-    const el = $(id);
-    if (el) el.addEventListener('change', updateFontSamples);
-  });
+function collectSettingsPayload() {
+  return {
+    businessName: $('businessName').value.trim(),
+    catalogSubtitle: $('catalogSubtitle').value.trim(),
+    businessPhone: $('businessPhone').value.trim(),
+    businessAddress: $('businessAddress').value.trim(),
+    deliveryFee: $('deliveryFee').value.trim(),
+    titleFont: $('titleFont').value,
+    bodyFont: $('bodyFont').value,
+    priceFont: $('priceFont').value,
+    primaryColor: $('primaryColor').value,
+    secondaryColor: $('secondaryColor').value,
+    backgroundColor: $('backgroundColor').value,
+    accentColor: $('accentColor').value,
+    pdfPageColor: $('pdfPageColor').value,
+    pdfCardColor: $('pdfCardColor').value,
+    pdfTextColor: $('pdfTextColor').value,
+    promoBackgroundColor: $('promoBackgroundColor').value,
+    promoFooter: $('promoFooter').value.trim(),
+    hideUnavailablePdf: $('hideUnavailablePdf').checked,
+    showPromoFooter: $('showPromoFooter').checked
+  };
+}
+
+let settingsAutoSaveTimer = null;
+async function saveSettingsAutomatically() {
+  if (!state.supabaseReady) return;
+  const payload = collectSettingsPayload();
+  state.settings = { ...DEFAULT_SETTINGS, ...payload };
+  setThemeVariables();
   updateFontSamples();
 
-  $('settingsForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const payload = {
-      businessName: $('businessName').value.trim(),
-      catalogSubtitle: $('catalogSubtitle').value.trim(),
-      businessPhone: $('businessPhone').value.trim(),
-      businessAddress: $('businessAddress').value.trim(),
-      deliveryFee: $('deliveryFee').value.trim(),
-      titleFont: $('titleFont').value,
-      bodyFont: $('bodyFont').value,
-      priceFont: $('priceFont').value,
-      primaryColor: $('primaryColor').value,
-      secondaryColor: $('secondaryColor').value,
-      backgroundColor: $('backgroundColor').value,
-      accentColor: $('accentColor').value,
-      pdfPageColor: $('pdfPageColor').value,
-      pdfCardColor: $('pdfCardColor').value,
-      pdfTextColor: $('pdfTextColor').value,
-      promoBackgroundColor: $('promoBackgroundColor').value,
-      promoFooter: $('promoFooter').value.trim(),
-      hideUnavailablePdf: $('hideUnavailablePdf').checked,
-      showPromoFooter: $('showPromoFooter').checked
-    };
-    const { error } = await supabase.from('configuracoes').upsert({
-      id: 'visual',
-      dados: payload,
-      atualizado_em: nowIso()
-    });
-    if (error) return toast('Erro ao salvar aparência.', 'error');
-    state.settings = { ...DEFAULT_SETTINGS, ...payload };
-    setThemeVariables();
-    toast('Aparência salva.');
+  const { error } = await supabase.from('configuracoes').upsert({
+    id: 'visual',
+    dados: payload,
+    atualizado_em: nowIso()
   });
+
+  if (error) {
+    console.error(error);
+    toast('Erro ao salvar aparência automaticamente.', 'error');
+  }
+}
+
+function scheduleSettingsAutoSave() {
+  const payload = collectSettingsPayload();
+  state.settings = { ...DEFAULT_SETTINGS, ...payload };
+  setThemeVariables();
+  updateFontSamples();
+  window.clearTimeout(settingsAutoSaveTimer);
+  settingsAutoSaveTimer = window.setTimeout(saveSettingsAutomatically, 500);
+}
+
+function bindSettingsUi() {
+  const fields = [
+    'businessName', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
+    'titleFont', 'bodyFont', 'priceFont',
+    'primaryColor', 'secondaryColor', 'backgroundColor', 'accentColor',
+    'pdfPageColor', 'pdfCardColor', 'pdfTextColor', 'promoBackgroundColor',
+    'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
+  ];
+
+  fields.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    const eventName = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(eventName, () => {
+      if (id === 'titleFont' || id === 'bodyFont' || id === 'priceFont') updateFontSamples();
+      scheduleSettingsAutoSave();
+    });
+  });
+
+  $('settingsForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    saveSettingsAutomatically();
+  });
+
+  updateFontSamples();
 }
 
 function fillSettingsForm() {
@@ -933,6 +971,27 @@ const PDF_FONT_MAP = {
   verdana: 'helvetica',
   courier: 'courier'
 };
+
+const PDF_FONT_SIZE_SCALE = {
+  freestyle: 1.12,
+  playfair: 1.02,
+  georgia: 1.00,
+  times: 1.02,
+  arial: 1.00,
+  helvetica: 1.00,
+  verdana: 0.92,
+  courier: 0.88
+};
+
+function pdfFontScale(kind = 'body') {
+  const key = kind === 'title' ? 'titleFont' : kind === 'price' ? 'priceFont' : 'bodyFont';
+  const selected = state.settings[key] || DEFAULT_SETTINGS[key];
+  return PDF_FONT_SIZE_SCALE[selected] || 1;
+}
+
+function setPdfFontSize(pdf, size, kind = 'body') {
+  pdf.setFontSize(size * pdfFontScale(kind));
+}
 
 function safePdfFont(font) {
   return PDF_FONT_MAP[font] || (['helvetica', 'times', 'courier'].includes(font) ? font : 'helvetica');
@@ -1357,55 +1416,44 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }
   ];
 
-  const itemW = 54;
+  const itemW = 45;
+  const itemGap = 4;
+  const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
+  const startX = (w - itemsTotalW) / 2;
   items.forEach((item, index) => {
-    const x = 25 + index * (itemW + 4);
+    const x = startX + index * (itemW + itemGap);
+    const boxY = 234;
+    const boxH = 25;
     setFillHex(pdf, '#ffffff');
-    pdf.roundedRect(x, 231, itemW, 31, 5, 5, 'F');
+    pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'F');
     setDrawHex(pdf, softAccent);
-    pdf.setLineWidth(0.28);
-    pdf.roundedRect(x, 231, itemW, 31, 5, 5, 'S');
+    pdf.setLineWidth(0.22);
+    pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
     if (item.icon) {
-      addImageContained(pdf, item.icon, x + 4, 239, 12, 12, `cover-icon-${index}`);
+      addImageContained(pdf, item.icon, x + 3.2, boxY + 8, 9.5, 9.5, `cover-icon-${index}`);
     } else {
-      setFillHex(pdf, mixHex(accent, '#ffffff', 0.2));
-      pdf.circle(x + 10, 245, 6, 'F');
+      setFillHex(pdf, mixHex(accent, '#ffffff', 0.18));
+      pdf.circle(x + 8, boxY + 13, 4.8, 'F');
       setPdfFont(pdf, 'body', 'bold');
-      pdf.setFontSize(8.5);
+      setPdfFontSize(pdf, 7.1, 'body');
       pdf.setTextColor(255, 255, 255);
-      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 10, 248, { align: 'center' });
+      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 8, boxY + 15.3, { align: 'center' });
     }
     setPdfFont(pdf, 'body', 'bold');
-    pdf.setFontSize(8.2);
+    setPdfFontSize(pdf, 6.9, 'body');
     setTextHex(pdf, primary);
-    pdf.text(item.label, x + 19, 240, { maxWidth: 31 });
+    pdf.text(item.label, x + 15, boxY + 8.2, { maxWidth: 25 });
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(7.2);
+    setPdfFontSize(pdf, 6.0, 'body');
     setTextHex(pdf, '#4d554c');
-    pdf.text(splitLines(pdf, item.value, 31, 2), x + 19, 247, { maxWidth: 31, lineHeightFactor: 1.05 });
+    pdf.text(splitLines(pdf, item.value, 26, 2), x + 15, boxY + 14.8, { maxWidth: 26, lineHeightFactor: 1.02 });
   });
 }
 
 function drawInternalBackground(pdf) {
   const bg = internalPageColor();
-  const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
-  const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const softAccent = mixHex(accent, bg, 0.86);
-  const softPrimary = mixHex(primary, bg, 0.9);
-
   setFillHex(pdf, bg);
   pdf.rect(0, 0, 210, 297, 'F');
-
-  // Decoração sutil de fundo, sem moldura envolvendo todos os produtos.
-  setDrawHex(pdf, softAccent);
-  pdf.setLineWidth(0.22);
-  for (let i = 0; i < 6; i += 1) {
-    pdf.line(7 + i * 5, 28 + i * 5, 26 + i * 6, 12 + i * 3);
-    pdf.circle(18 + i * 5, 21 + i * 3, 1.1, 'S');
-  }
-  setFillHex(pdf, softPrimary);
-  pdf.circle(198, 22, 12, 'F');
-  pdf.circle(15, 249, 18, 'F');
 }
 
 function drawHeader() {
@@ -1416,21 +1464,19 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
   const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
-  const card = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
-  const softFill = mixHex(card, bg, 0.2);
-  const softLine = mixHex(accent, bg, 0.66);
+  const softLine = mixHex(accent, bg, 0.52);
 
-  setFillHex(pdf, softFill);
-  pdf.roundedRect(x, y + 0.8, width, 9.3, 3, 3, 'F');
-  setDrawHex(pdf, softLine);
-  pdf.setLineWidth(0.22);
-  pdf.line(x + 6, y + 5.4, x + 30, y + 5.4);
-  pdf.line(x + width - 30, y + 5.4, x + width - 6, y + 5.4);
+  setFillHex(pdf, accent);
+  pdf.roundedRect(x, y + 1.2, 2.4, 7.8, 1.2, 1.2, 'F');
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(13.8);
+  setPdfFontSize(pdf, 14.8, 'title');
   setTextHex(pdf, primary);
-  pdf.text(String(title || 'Produtos'), x + width / 2, y + 6.7, { align: 'center', maxWidth: width - 68 });
+  pdf.text(String(title || 'Produtos'), x + 5.5, y + 7.1, { maxWidth: width - 10 });
+
+  setDrawHex(pdf, softLine);
+  pdf.setLineWidth(0.32);
+  pdf.line(x + 5.5, y + 10.5, x + width, y + 10.5);
 }
 
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
