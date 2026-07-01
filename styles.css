@@ -533,38 +533,74 @@ textarea,
 }
 
 
-/* Novo ícone definitivo do aplicativo */
+
+
+/* Ícone do app mais limpo e proporcional */
 .brand-mark.app-icon-mark,
 .app-symbol.app-icon-mark,
 .brand-mark.has-logo,
 .app-symbol.has-logo {
-  background: #fff8f2;
-  border: 1px solid var(--border);
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(145deg, #fff8f2 0%, #f5ebe3 100%);
+  border: 1px solid rgba(128, 86, 48, 0.28);
   overflow: hidden;
-  padding: 3px;
+  padding: 0;
   color: transparent;
-  box-shadow: 0 10px 28px rgba(125, 18, 37, 0.16);
+  box-shadow:
+    0 10px 22px rgba(125, 18, 37, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .brand-mark.app-icon-mark img,
 .app-symbol.app-icon-mark img,
 .brand-mark.has-logo img,
 .app-symbol.has-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  width: 126%;
+  height: 126%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
   object-position: center;
   display: block;
+  transform: scale(1.12);
+  transform-origin: center;
 }
 
-.login-card .brand-mark.app-icon-mark {
-  width: 74px;
-  height: 74px;
+.login-card .brand-mark.app-icon-mark,
+.login-card .brand-mark.has-logo {
+  width: 78px;
+  height: 78px;
   border-radius: 24px;
 }
 
-.sidebar .app-symbol.app-icon-mark {
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
+.sidebar .app-symbol.app-icon-mark,
+.sidebar .app-symbol.has-logo {
+  width: 70px;
+  height: 70px;
+  border-radius: 24px;
+  margin-bottom: 8px;
+}
+
+.sidebar .brand-block {
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .sidebar .app-symbol.app-icon-mark,
+  .sidebar .app-symbol.has-logo {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    margin-bottom: 0;
+  }
+
+  .brand-mark.app-icon-mark img,
+  .app-symbol.app-icon-mark img,
+  .brand-mark.has-logo img,
+  .app-symbol.has-logo img {
+    width: 132%;
+    height: 132%;
+    transform: scale(1.16);
+  }
 }
