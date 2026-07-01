@@ -763,7 +763,7 @@ function collectSettingsPayload() {
   };
 }
 let settingsAutoSaveTimer = null;
-async async function saveSettingsAutomatically() {
+async function saveSettingsAutomatically() {
   if (!state.supabaseReady) return;
   const payload = collectSettingsPayload();
   state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...payload });
