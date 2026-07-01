@@ -1705,7 +1705,7 @@ function drawCategoryTitle(pdf, title, x, y, width) {
 
   setPdfFont(pdf, 'title', 'bold');
   setPdfFontSize(pdf, 13.8, 'title');
-  setTextHex(pdf, primary);
+  setTextHex(pdf, '#000000');
   pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 });
 }
 
