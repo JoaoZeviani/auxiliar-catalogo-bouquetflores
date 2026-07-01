@@ -26,8 +26,8 @@ button { cursor: pointer; }
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 16% 12%, rgba(125, 18, 37, 0.18), transparent 28%),
-    radial-gradient(circle at 86% 82%, rgba(128, 86, 48, 0.20), transparent 32%),
+    radial-gradient(circle at 16% 12%, rgba(214, 154, 139, 0.28), transparent 28%),
+    radial-gradient(circle at 86% 82%, rgba(95, 127, 90, 0.25), transparent 32%),
     linear-gradient(135deg, #F5EBE3, #f7eee6);
 }
 
@@ -533,7 +533,7 @@ textarea,
 }
 
 
-/* Novo ícone do aplicativo */
+/* Novo ícone definitivo do aplicativo */
 .brand-mark.app-icon-mark,
 .app-symbol.app-icon-mark,
 .brand-mark.has-logo,
@@ -542,6 +542,7 @@ textarea,
   border: 1px solid var(--border);
   overflow: hidden;
   padding: 3px;
+  color: transparent;
   box-shadow: 0 10px 28px rgba(125, 18, 37, 0.16);
 }
 
