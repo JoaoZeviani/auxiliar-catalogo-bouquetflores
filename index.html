@@ -14,7 +14,7 @@
 
   <section id="loginScreen" class="login-screen">
     <div class="login-card">
-      <div class="brand-mark">✿</div>
+      <div id="loginBrandMark" class="brand-mark">✿</div>
       <h1>Auxiliar de Catálogos</h1>
       <p>Entre com a senha da floricultura para gerenciar produtos e gerar PDFs.</p>
       <form id="loginForm" class="login-form">
@@ -32,7 +32,7 @@
   <main id="appShell" class="app-shell hidden">
     <aside class="sidebar">
       <div class="app-title">
-        <span class="app-symbol">✿</span>
+        <span id="sidebarLogoMark" class="app-symbol">✿</span>
         <div>
           <strong>Catálogos</strong>
           <small>Floricultura</small>
@@ -148,23 +148,33 @@
           <div class="form-grid font-grid">
             <label>Fonte dos títulos
               <select id="titleFont">
-                <option value="times">Clássica</option>
-                <option value="helvetica">Moderna</option>
-                <option value="courier">Simples</option>
+                <option value="freestyle">Freestyle Script</option>
+                <option value="playfair">Playfair / elegante</option>
+                <option value="georgia">Georgia / clássica</option>
+                <option value="times">Times New Roman</option>
+                <option value="arial">Arial / limpa</option>
+                <option value="helvetica">Helvetica / moderna</option>
+                <option value="verdana">Verdana / legível</option>
               </select>
             </label>
             <label>Fonte dos textos
               <select id="bodyFont">
-                <option value="helvetica">Moderna</option>
-                <option value="times">Clássica</option>
-                <option value="courier">Simples</option>
+                <option value="arial">Arial / limpa</option>
+                <option value="helvetica">Helvetica / moderna</option>
+                <option value="verdana">Verdana / legível</option>
+                <option value="georgia">Georgia / clássica</option>
+                <option value="times">Times New Roman</option>
+                <option value="courier">Courier / simples</option>
               </select>
             </label>
             <label>Fonte dos preços
               <select id="priceFont">
-                <option value="helvetica">Moderna</option>
-                <option value="times">Clássica</option>
-                <option value="courier">Simples</option>
+                <option value="georgia">Georgia / clássica</option>
+                <option value="times">Times New Roman</option>
+                <option value="arial">Arial / limpa</option>
+                <option value="helvetica">Helvetica / moderna</option>
+                <option value="freestyle">Freestyle Script</option>
+                <option value="verdana">Verdana / legível</option>
               </select>
             </label>
           </div>
