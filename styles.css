@@ -174,13 +174,14 @@ label { display: grid; gap: 7px; color: var(--text); font-weight: 650; }
 
 .asset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .asset-card { padding: 20px; display: grid; gap: 12px; }
+.asset-help { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
 .asset-preview { min-height: 180px; border: 1px dashed var(--border); border-radius: 18px; background: #fffaf5; display: grid; place-items: center; overflow: hidden; color: var(--muted); }
 .asset-preview.wide { min-height: 220px; }
 .asset-preview img { width: 100%; height: 100%; object-fit: cover; }
 
 .settings-form { display: grid; gap: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 22px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(230px, 1fr)); gap: 14px; }
-.colors { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
+.colors { grid-template-columns: repeat(4, minmax(145px, 1fr)); }
 input[type="color"] { min-height: 46px; padding: 4px; }
 .checkbox-row { display: flex; gap: 18px; flex-wrap: wrap; }
 .checkbox-row label, .checkbox-label { display: flex; align-items: center; gap: 10px; font-weight: 700; }
