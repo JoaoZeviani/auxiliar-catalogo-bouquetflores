@@ -57,46 +57,53 @@ const CATALOG_BACKGROUND_PRESETS = {
 
 const CATALOG_BACKGROUND_PALETTES = {
   preset_1: {
-    primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#b98b50',
+    primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#758765',
     pdfPageColor: '#f6f0e7', pdfCardColor: '#fffaf2', pdfCardBorderColor: '#d8c7ad',
-    pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#9d6d32',
-    promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff'
+    pdfTextColor: '#273323', pdfMutedTextColor: '#6f7467', pdfPriceColor: '#5f7253',
+    promoBackgroundColor: '#5f7253', promoTextColor: '#ffffff',
+    categoryColor: '#5f7253', categoryAccentColor: '#758765'
   },
   preset_2: {
-    primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#a98756',
+    primaryColor: '#60766a', secondaryColor: '#b8c5b4', backgroundColor: '#f3f1ea', accentColor: '#7d8d82',
     pdfPageColor: '#f3f1ea', pdfCardColor: '#fffdf6', pdfCardBorderColor: '#c9d2c5',
-    pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#8a6a3c',
-    promoBackgroundColor: '#60766a', promoTextColor: '#ffffff'
+    pdfTextColor: '#25322b', pdfMutedTextColor: '#687269', pdfPriceColor: '#60766a',
+    promoBackgroundColor: '#60766a', promoTextColor: '#ffffff',
+    categoryColor: '#60766a', categoryAccentColor: '#7d8d82'
   },
   preset_3: {
-    primaryColor: '#74614f', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570',
+    primaryColor: '#74615a', secondaryColor: '#d9a6a0', backgroundColor: '#faf1ed', accentColor: '#b87570',
     pdfPageColor: '#faf1ed', pdfCardColor: '#fff9f6', pdfCardBorderColor: '#e2c3bb',
     pdfTextColor: '#352b25', pdfMutedTextColor: '#7a6c63', pdfPriceColor: '#a65f5b',
-    promoBackgroundColor: '#74614f', promoTextColor: '#ffffff'
+    promoBackgroundColor: '#74615a', promoTextColor: '#ffffff',
+    categoryColor: '#74615a', categoryAccentColor: '#b87570'
   },
   preset_4: {
-    primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#87945d',
+    primaryColor: '#597061', secondaryColor: '#c4d0bd', backgroundColor: '#eff4ed', accentColor: '#788a72',
     pdfPageColor: '#eff4ed', pdfCardColor: '#fbfff8', pdfCardBorderColor: '#c8d6c3',
-    pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#6f7f43',
-    promoBackgroundColor: '#597061', promoTextColor: '#ffffff'
+    pdfTextColor: '#223329', pdfMutedTextColor: '#637166', pdfPriceColor: '#597061',
+    promoBackgroundColor: '#597061', promoTextColor: '#ffffff',
+    categoryColor: '#597061', categoryAccentColor: '#788a72'
   },
   preset_5: {
-    primaryColor: '#546875', secondaryColor: '#b7c2c8', backgroundColor: '#eef2f2', accentColor: '#8b8b60',
+    primaryColor: '#536b78', secondaryColor: '#c4cdd2', backgroundColor: '#eef2f2', accentColor: '#6f8796',
     pdfPageColor: '#eef2f2', pdfCardColor: '#fbfdfc', pdfCardBorderColor: '#c6d0d4',
-    pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#747344',
-    promoBackgroundColor: '#546875', promoTextColor: '#ffffff'
+    pdfTextColor: '#233039', pdfMutedTextColor: '#657078', pdfPriceColor: '#4e6673',
+    promoBackgroundColor: '#536b78', promoTextColor: '#ffffff',
+    categoryColor: '#536b78', categoryAccentColor: '#6f8796'
   },
   preset_6: {
-    primaryColor: '#70433d', secondaryColor: '#d3b2a3', backgroundColor: '#f5ebe3', accentColor: '#9b5f57',
-    pdfPageColor: '#f5ebe3', pdfCardColor: '#fff8f1', pdfCardBorderColor: '#dec5b8',
-    pdfTextColor: '#392a27', pdfMutedTextColor: '#776964', pdfPriceColor: '#84413d',
-    promoBackgroundColor: '#70433d', promoTextColor: '#ffffff'
+    primaryColor: '#744b47', secondaryColor: '#d8b8aa', backgroundColor: '#f7ede5', accentColor: '#9b6961',
+    pdfPageColor: '#f7ede5', pdfCardColor: '#fff9f3', pdfCardBorderColor: '#e2c8ba',
+    pdfTextColor: '#392a27', pdfMutedTextColor: '#7a6861', pdfPriceColor: '#7d4541',
+    promoBackgroundColor: '#744b47', promoTextColor: '#ffffff',
+    categoryColor: '#744b47', categoryAccentColor: '#9b6961'
   },
   preset_7: {
-    primaryColor: '#7a4644', secondaryColor: '#d8b9aa', backgroundColor: '#f7ede5', accentColor: '#a8695f',
+    primaryColor: '#784c4c', secondaryColor: '#d8b9aa', backgroundColor: '#f7ede5', accentColor: '#a06a61',
     pdfPageColor: '#f7ede5', pdfCardColor: '#fff9f3', pdfCardBorderColor: '#e2c8ba',
-    pdfTextColor: '#3a2a28', pdfMutedTextColor: '#7c6a64', pdfPriceColor: '#8e4642',
-    promoBackgroundColor: '#7a4644', promoTextColor: '#ffffff'
+    pdfTextColor: '#3a2a28', pdfMutedTextColor: '#7c6a64', pdfPriceColor: '#804743',
+    promoBackgroundColor: '#784c4c', promoTextColor: '#ffffff',
+    categoryColor: '#784c4c', categoryAccentColor: '#a06a61'
   }
 };
 
@@ -1674,7 +1681,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
 
     setPdfFont(pdf, 'body', 'normal');
     setPdfFontSize(pdf, 7.15, 'body');
-    setTextHex(pdf, '#4d554c');
+    setTextHex(pdf, normalizeHex(activeCatalogPalette().pdfTextColor, '#3f4a42'));
     pdf.text(splitLines(pdf, item.value, 34, 3), x + 18, boxY + 16.4, { maxWidth: 34, lineHeightFactor: 1.04 });
   });
 }
@@ -1689,26 +1696,26 @@ function drawHeader() {
 }
 
 function drawCategoryTitle(pdf, title, x, y, width) {
-  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
+  const palette = activeCatalogPalette();
+  const primary = normalizeHex(palette.categoryColor || palette.primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(palette.categoryAccentColor || palette.accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
-  const headerBg = mixHex(primary, bg, 0.07);
-  const border = mixHex(accent, bg, 0.16);
+  const headerBg = mixHex(primary, bg, 0.055);
+  const border = mixHex(accent, bg, 0.13);
 
-  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.82);
+  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.78);
   setDrawHex(pdf, border);
-  pdf.setLineWidth(0.22);
+  pdf.setLineWidth(0.20);
   pdf.roundedRect(x, y, width, 10.8, 2.8, 2.8, 'S');
 
-  setFillHex(pdf, mixHex(accent, bg, 0.10));
-  withPdfOpacity(pdf, 0.42, () => pdf.rect(x + 4, y + 9.4, width - 8, 0.45, 'F'));
+  setFillHex(pdf, mixHex(accent, bg, 0.08));
+  withPdfOpacity(pdf, 0.32, () => pdf.rect(x + 4, y + 9.4, width - 8, 0.4, 'F'));
 
   setPdfFont(pdf, 'title', 'bold');
   setPdfFontSize(pdf, 13.8, 'title');
   setTextHex(pdf, '#000000');
   pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 });
 }
-
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
 }
