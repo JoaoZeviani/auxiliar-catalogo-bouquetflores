@@ -3,7 +3,20 @@ import { supabaseConfig, ADMIN_EMAIL } from './supabase-config.js';
 
 const STORAGE_BUCKET = 'catalogo-imagens';
 const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
-const APP_ICON_URL = './assets/icons/app-icon-192.png'; // referência visual usada pela barra do painel
+const APP_ICON_URL = './assets/icons/app-icon-192.png';
+
+const DEFAULT_CATEGORY_COLORS = [
+  '#7D1225',
+  '#805630',
+  '#9C2538',
+  '#A8663D',
+  '#5C0D1B',
+  '#B98C62',
+  '#6B5149',
+  '#C48A74',
+  '#8E3B46',
+  '#A8794B'
+]; // referência visual usada pela barra do painel
 
 const DEFAULT_SETTINGS = {
   businessName: 'Sua Floricultura',
@@ -73,6 +86,7 @@ function applyCatalogPaletteToSettings(settings = {}) {
 const state = {
   products: [],
   categories: [],
+  categoryColors: {},
   settings: { ...DEFAULT_SETTINGS },
   assets: { ...DEFAULT_ASSETS },
   editingProduct: null,
@@ -250,6 +264,8 @@ async function startRealtimeListeners() {
   supabase.channel('catalogo-dados')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'categorias' }, async () => {
       await loadCategories();
+      await loadCategoryColors();
+      await ensureCategoryColors();
       renderCategories();
       renderProductCategoryOptions();
       renderProducts();
@@ -266,9 +282,12 @@ async function startRealtimeListeners() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracoes' }, async () => {
       await loadSettings();
       await loadAssets();
+      await loadCategoryColors();
       setThemeVariables();
       fillSettingsForm();
       renderAssetPreviews();
+      renderCategories();
+      renderProducts();
       refreshStorageEstimate();
     })
     .subscribe();
@@ -276,6 +295,8 @@ async function startRealtimeListeners() {
 
 async function loadAllData() {
   await Promise.all([loadCategories(), loadProducts(), loadSettings(), loadAssets()]);
+  await loadCategoryColors();
+  await ensureCategoryColors();
   renderCategories();
   renderProductCategoryOptions();
   renderProducts();
@@ -308,6 +329,26 @@ async function loadSettings() {
   }
   state.settings = applyCatalogPaletteToSettings({ ...DEFAULT_SETTINGS, ...(data.dados || {}) });
 }
+
+async function loadCategoryColors() {
+  const { data, error } = await supabase
+    .from('configuracoes')
+    .select('dados')
+    .eq('id', 'category-colors')
+    .maybeSingle();
+
+  if (error) throw error;
+
+  const rawColors = data?.dados?.colors || {};
+  const colors = {};
+
+  Object.entries(rawColors).forEach(([id, color]) => {
+    colors[id] = normalizeCategoryColor(color, defaultCategoryColor(id));
+  });
+
+  state.categoryColors = colors;
+}
+
 
 function normalizeAssets(raw = {}) {
   const assets = { ...DEFAULT_ASSETS, ...(raw || {}) };
@@ -478,6 +519,96 @@ function productCountByCategory(categoryId) {
   return state.products.filter((product) => product.categoriaId === categoryId).length;
 }
 
+
+function normalizeCategoryColor(color, fallback = DEFAULT_CATEGORY_COLORS[0]) {
+  const value = String(color || '').trim();
+  return /^#[0-9a-fA-F]{6}$/.test(value) ? value.toUpperCase() : fallback;
+}
+
+function defaultCategoryColor(categoryId) {
+  const index = Math.max(0, state.categories.findIndex((category) => category.id === categoryId));
+  return DEFAULT_CATEGORY_COLORS[index % DEFAULT_CATEGORY_COLORS.length];
+}
+
+function categoryColor(categoryId) {
+  return normalizeCategoryColor(state.categoryColors?.[categoryId], defaultCategoryColor(categoryId));
+}
+
+function categoryColorStyle(categoryId) {
+  const color = categoryColor(categoryId);
+  return `--category-color:${color}; --category-soft:${hexToRgba(color, 0.12)}; --category-border:${hexToRgba(color, 0.34)};`;
+}
+
+function hexToRgba(hex, alpha = 1) {
+  const clean = normalizeCategoryColor(hex).replace('#', '');
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+let categoryColorSaveTimer = null;
+
+async function saveCategoryColorsDebounced() {
+  window.clearTimeout(categoryColorSaveTimer);
+  categoryColorSaveTimer = window.setTimeout(saveCategoryColors, 450);
+}
+
+async function saveCategoryColors() {
+  if (!state.supabaseReady) return;
+
+  const validIds = new Set(state.categories.map((category) => category.id));
+  const colors = {};
+
+  state.categories.forEach((category) => {
+    colors[category.id] = categoryColor(category.id);
+  });
+
+  Object.entries(state.categoryColors || {}).forEach(([id, color]) => {
+    if (validIds.has(id)) {
+      colors[id] = normalizeCategoryColor(color, defaultCategoryColor(id));
+    }
+  });
+
+  state.categoryColors = colors;
+
+  const { error } = await supabase.from('configuracoes').upsert({
+    id: 'category-colors',
+    dados: { colors },
+    atualizado_em: nowIso()
+  });
+
+  if (error) {
+    console.error(error);
+    toast('Erro ao salvar cor da categoria.', 'error');
+  }
+}
+
+async function ensureCategoryColors() {
+  const next = { ...(state.categoryColors || {}) };
+  let changed = false;
+
+  state.categories.forEach((category) => {
+    if (!normalizeCategoryColor(next[category.id], '').startsWith('#')) {
+      next[category.id] = defaultCategoryColor(category.id);
+      changed = true;
+    }
+  });
+
+  Object.keys(next).forEach((id) => {
+    if (!state.categories.some((category) => category.id === id)) {
+      delete next[id];
+      changed = true;
+    }
+  });
+
+  state.categoryColors = next;
+
+  if (changed && state.supabaseReady) {
+    await saveCategoryColors();
+  }
+}
+
 function pluralProduct(count) {
   return count === 1 ? '1 produto' : `${count} produtos`;
 }
@@ -524,7 +655,7 @@ function renderProducts() {
       <div class="product-card-img">${p.imagemUrl ? `<img class="product-thumb" src="${escapeHtml(p.imagemUrl)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;display:block!important;">` : '<span class="no-image">✿</span>'}</div>
       <div class="product-card-body">
         <div class="product-meta">
-          <span class="badge">${escapeHtml(categoryName(p.categoriaId))}</span>
+          <span class="badge category-badge" style="${categoryColorStyle(p.categoriaId)}">${escapeHtml(categoryName(p.categoriaId))}</span>
           <span class="badge ${p.disponivel ? '' : 'off'}">${p.disponivel ? 'Disponível' : 'Indisponível'}</span>
         </div>
         <h3>${escapeHtml(p.nome)}</h3>
@@ -580,6 +711,8 @@ function bindCategoryUi() {
     const { error } = await supabase.from('categorias').insert({ nome, ordem, criado_em: nowIso() });
     if (error) return toast('Erro ao adicionar categoria.', 'error');
     await loadCategories();
+    await loadCategoryColors();
+    await ensureCategoryColors();
     renderCategories();
     renderProductCategoryOptions();
     renderProducts();
@@ -596,23 +729,46 @@ function renderCategories() {
     return;
   }
 
-  list.innerHTML = state.categories.map((c, index) => `
-    <div class="category-row">
-      <div class="category-main">
-        <input class="category-name-input" value="${escapeHtml(c.nome)}" data-id="${c.id}" aria-label="Nome da categoria">
-        <span class="category-count">${pluralProduct(productCountByCategory(c.id))}</span>
+  list.innerHTML = state.categories.map((c, index) => {
+    const color = categoryColor(c.id);
+    return `
+      <div class="category-row" style="${categoryColorStyle(c.id)}">
+        <div class="category-main">
+          <div class="category-name-line">
+            <span class="category-color-dot" aria-hidden="true"></span>
+            <input class="category-name-input" value="${escapeHtml(c.nome)}" data-id="${c.id}" aria-label="Nome da categoria">
+          </div>
+          <div class="category-subline">
+            <label class="category-color-control">
+              <span>Cor da categoria</span>
+              <input class="category-color-input" type="color" value="${color}" data-id="${c.id}" aria-label="Cor da categoria ${escapeHtml(c.nome)}">
+            </label>
+            <span class="category-count">${pluralProduct(productCountByCategory(c.id))}</span>
+          </div>
+        </div>
+        <div class="category-actions">
+          <button class="ghost-btn" data-action="up" data-id="${c.id}" ${index === 0 ? 'disabled' : ''}>Subir</button>
+          <button class="ghost-btn" data-action="down" data-id="${c.id}" ${index === state.categories.length - 1 ? 'disabled' : ''}>Descer</button>
+          <button class="secondary-btn" data-action="save" data-id="${c.id}">Salvar nome</button>
+          <button class="danger-btn" data-action="delete" data-id="${c.id}">Excluir</button>
+        </div>
       </div>
-      <div class="category-actions">
-        <button class="ghost-btn" data-action="up" data-id="${c.id}" ${index === 0 ? 'disabled' : ''}>Subir</button>
-        <button class="ghost-btn" data-action="down" data-id="${c.id}" ${index === state.categories.length - 1 ? 'disabled' : ''}>Descer</button>
-        <button class="secondary-btn" data-action="save" data-id="${c.id}">Salvar nome</button>
-        <button class="danger-btn" data-action="delete" data-id="${c.id}">Excluir</button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   list.querySelectorAll('button[data-action]').forEach((btn) => {
     btn.addEventListener('click', () => handleCategoryAction(btn.dataset.action, btn.dataset.id));
+  });
+
+  list.querySelectorAll('.category-color-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      const id = input.dataset.id;
+      state.categoryColors[id] = normalizeCategoryColor(input.value, defaultCategoryColor(id));
+      const row = input.closest('.category-row');
+      if (row) row.setAttribute('style', categoryColorStyle(id));
+      renderProducts();
+      saveCategoryColorsDebounced();
+    });
   });
 }
 
@@ -628,6 +784,8 @@ async function handleCategoryAction(action, id) {
     const { error } = await supabase.from('categorias').update({ nome, atualizado_em: nowIso() }).eq('id', id);
     if (error) return toast('Erro ao atualizar categoria.', 'error');
     await loadCategories();
+    await loadCategoryColors();
+    await ensureCategoryColors();
     renderCategories();
     renderProductCategoryOptions();
     renderProducts();
@@ -644,6 +802,8 @@ async function handleCategoryAction(action, id) {
     const { error } = await supabase.from('categorias').delete().eq('id', id);
     if (error) return toast('Erro ao excluir categoria.', 'error');
     await loadCategories();
+    await loadCategoryColors();
+    await ensureCategoryColors();
     renderCategories();
     renderProductCategoryOptions();
     renderStats();
@@ -661,6 +821,8 @@ async function handleCategoryAction(action, id) {
     ]);
     if (one.error || two.error) return toast('Erro ao reordenar categorias.', 'error');
     await loadCategories();
+    await loadCategoryColors();
+    await ensureCategoryColors();
     renderCategories();
     renderProductCategoryOptions();
     renderProducts();
@@ -1321,7 +1483,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
     for (const group of categoryGroups) {
       finishPartialRow();
       ensureSpace(layout.categoryH + layout.cardH);
-      drawCategoryTitle(pdf, group.category.nome, layout.left, y, 202);
+      drawCategoryTitle(pdf, group.category, layout.left, y, 202);
       y += layout.categoryH;
       hasContentOnPage = true;
 
@@ -1329,7 +1491,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
         if (col === 0) ensureSpace(layout.cardH);
         if (y + layout.cardH > layout.bottom) {
           addInternalPage();
-          drawCategoryTitle(pdf, group.category.nome, layout.left, y, 202);
+          drawCategoryTitle(pdf, group.category, layout.left, y, 202);
           y += layout.categoryH;
         }
 
@@ -1525,12 +1687,19 @@ function drawHeader() {
   // Sem cabeçalho nas páginas internas para economizar espaço e evitar textos repetidos.
 }
 
-function drawCategoryTitle(pdf, title, x, y, width) {
-  const primary = '#7D1225';
+function drawCategoryTitle(pdf, categoryOrTitle, x, y, width) {
+  const title = typeof categoryOrTitle === 'object' && categoryOrTitle !== null
+    ? categoryOrTitle.nome
+    : categoryOrTitle;
+  const categoryId = typeof categoryOrTitle === 'object' && categoryOrTitle !== null
+    ? categoryOrTitle.id
+    : null;
+
+  const primary = categoryId ? categoryColor(categoryId) : '#7D1225';
   const accent = '#805630';
   const bg = internalPageColor();
-  const headerBg = mixHex(primary, bg, 0.08);
-  const border = mixHex(accent, bg, 0.24);
+  const headerBg = mixHex(primary, bg, 0.10);
+  const border = mixHex(primary, bg, 0.28);
   const fullText = String(title || 'Produtos').toUpperCase();
 
   const paddingX = 5;
@@ -1557,16 +1726,19 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2));
   const boxHeight = 10.8;
 
-  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.80);
+  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.82);
   setDrawHex(pdf, border);
   pdf.setLineWidth(0.22);
   pdf.roundedRect(x, y, labelWidth, boxHeight, 2.8, 2.8, 'S');
 
   setFillHex(pdf, mixHex(accent, bg, 0.10));
-  withPdfOpacity(pdf, 0.35, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
+  withPdfOpacity(pdf, 0.26, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
+
+  setFillHex(pdf, primary);
+  withPdfOpacity(pdf, 0.88, () => pdf.roundedRect(x + 3.4, y + 3, 2.4, 4.8, 1.1, 1.1, 'F'));
 
   setTextHex(pdf, '#000000');
-  pdf.text(text, x + paddingX, y + 7.2);
+  pdf.text(text, x + paddingX + 3.5, y + 7.2);
 }
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
@@ -1578,10 +1750,10 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
   const cardColor = '#FFF8F2';
-  const accent = '#805630';
+  const accent = categoryColor(product.categoriaId);
   const textColor = '#2F1D19';
   const bg = internalPageColor();
-  const softBorder = mixHex(accent, bg, 0.44);
+  const softBorder = mixHex(accent, bg, 0.40);
 
   fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);
   setDrawHex(pdf, softBorder);
