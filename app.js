@@ -1648,3 +1648,20 @@ bindSettingsUi();
 bindPdfUi();
 setThemeVariables();
 registerServiceWorker();
+
+
+// Hotfix pós-carregamento: remove controles quebrados que tinham vazado para a tela de login.
+window.addEventListener('DOMContentLoaded', () => {
+  const login = document.getElementById('loginScreen');
+  const appShell = document.getElementById('appShell');
+  if (login && appShell && !appShell.classList.contains('hidden')) {
+    // O controle de autenticação do app decide quando mostrar. Este bloco só evita vazamento visual inicial.
+  }
+  const select = document.getElementById('catalogBackgroundMode');
+  if (select) {
+    [...select.options].forEach((opt) => {
+      if (opt.value === 'custom' || opt.value === 'none') opt.remove();
+    });
+    if (!select.value) select.value = 'preset_1';
+  }
+});

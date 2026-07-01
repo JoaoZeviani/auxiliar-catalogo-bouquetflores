@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auxiliar-catalogos-runtime-paletas-corrigido-1782931457456';
+const CACHE_NAME = 'auxiliar-catalogos-runtime-layout-fix-1782931913938';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

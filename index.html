@@ -1,23 +1,236 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auxiliar de Criação de Catálogos</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#5f7f5a" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="styles.css" />
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <title>Auxiliar de Catálogos</title>
+  <link rel="stylesheet" href="./styles.css?v=layout-fix-20260701" />
+  <link rel="manifest" href="./manifest.webmanifest" />
 </head>
 <body>
-  <div id="toast" class="toast" aria-live="polite"></div>
-
   <section id="loginScreen" class="login-screen">
     <div class="login-card">
-      <div id="loginBrandMark" class="brand-mark">✿</div>
+      <span class="brand-mark">✿</span>
       <h1>Auxiliar de Catálogos</h1>
       <p>Entre com a senha da floricultura para gerenciar produtos e gerar PDFs.</p>
+
       <form id="loginForm" class="login-form">
+        <label>Senha
+          <div class="password-row">
+            <input id="passwordInput" type="password" autocomplete="current-password" required />
+            <button id="togglePassword" type="button" class="ghost-btn">Mostrar</button>
+          </div>
+        </label>
+        <button type="submit" class="primary-btn full">Entrar</button>
+        <small class="muted">A senha não fica salva no código. A validação é feita pelo Supabase Auth.</small>
+      </form>
+    </div>
+  </section>
+
+  <main id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="app-title">
+        <span class="app-symbol">✿</span>
+        <div>
+          <strong>Catálogos Floricultura</strong>
+          <small>Produtos e PDFs</small>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="Abas do aplicativo">
+        <button type="button" class="active" data-tab="dashboard">Início</button>
+        <button type="button" data-tab="produtos">Produtos</button>
+        <button type="button" data-tab="categorias">Categorias</button>
+        <button type="button" data-tab="imagens">Imagens fixas</button>
+        <button type="button" data-tab="aparencia">Aparência do PDF</button>
+      </nav>
+
+      <button id="logoutBtn" type="button" class="ghost-btn logout">Sair</button>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Início</h2>
+          <p id="pageSubtitle">Resumo dos produtos e opções do catálogo.</p>
+        </div>
+        <button id="quickPdfBtn" type="button" class="primary-btn">Gerar PDF</button>
+      </header>
+
+      <section id="tab-dashboard" class="tab-panel active">
+        <article class="dashboard-hero">
+          <div>
+            <span class="eyebrow">Painel da loja</span>
+            <h3>Catálogo pronto para vender</h3>
+            <p>Acompanhe produtos, categorias, disponibilidade e uso estimado do armazenamento.</p>
+          </div>
+          <button id="dashboardPdfBtn" type="button" class="primary-btn big">Gerar PDF agora</button>
+        </article>
+
+        <div class="stats-grid">
+          <article class="stat-card"><span>Total de produtos</span><strong id="statTotal">0</strong></article>
+          <article class="stat-card"><span>Disponíveis</span><strong id="statAvailable">0</strong></article>
+          <article class="stat-card"><span>Indisponíveis</span><strong id="statUnavailable">0</strong></article>
+          <article class="stat-card"><span>Categorias</span><strong id="statCategories">0</strong></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="storage-card">
+            <div class="storage-head">
+              <div>
+                <h3>Armazenamento usado</h3>
+                <p id="storageStatus">Calculando imagens...</p>
+              </div>
+              <strong id="storagePercent">0%</strong>
+            </div>
+            <div class="storage-track"><div id="storageBar" class="storage-bar" style="width:0%"></div></div>
+            <div class="storage-foot">
+              <span id="storageBytes">0 B usados</span>
+              <span>Limite de referência: 1 GB de arquivos no Supabase Storage</span>
+            </div>
+            <p class="muted">Estimativa feita pelas imagens cadastradas no Storage. O banco Postgres tem limite separado.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-produtos" class="tab-panel">
+        <div class="section-actions product-toolbar">
+          <button id="newProductBtn" type="button" class="primary-btn">Novo produto</button>
+          <div class="product-filters">
+            <input id="productSearch" class="search-input" type="search" placeholder="Buscar produto..." />
+            <label class="sort-label">Ordenar por
+              <select id="productSort">
+                <option value="nome">Nome</option>
+                <option value="categoria">Categoria</option>
+                <option value="preco">Preço</option>
+                <option value="disponibilidade">Disponibilidade</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div id="productsList" class="cards-list"></div>
+      </section>
+
+      <section id="tab-categorias" class="tab-panel">
+        <form id="categoryForm" class="inline-form">
+          <input id="categoryName" type="text" placeholder="Nome da categoria" autocomplete="off" />
+          <button type="submit" class="primary-btn">Adicionar categoria</button>
+        </form>
+        <div id="categoriesList" class="sortable-list"></div>
+      </section>
+
+      <section id="tab-imagens" class="tab-panel">
+        <div class="asset-grid">
+          <article class="asset-card">
+            <h3>Logotipo</h3>
+            <div id="logoPreview" class="asset-preview"></div>
+            <input id="logoInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Foto da capa</h3>
+            <div id="coverPreview" class="asset-preview"></div>
+            <input id="coverInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Ícone decorativo</h3>
+            <div id="iconPreview" class="asset-preview small"></div>
+            <input id="iconInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Ícone WhatsApp</h3>
+            <p class="asset-help">Aparece na capa para deixar claro que o telefone é WhatsApp.</p>
+            <div id="whatsappIconPreview" class="asset-preview small"></div>
+            <input id="whatsappIconInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Ícone entrega</h3>
+            <p class="asset-help">Aparece junto da taxa de entrega na capa.</p>
+            <div id="deliveryIconPreview" class="asset-preview small"></div>
+            <input id="deliveryIconInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Ícone local</h3>
+            <p class="asset-help">Aparece junto do endereço na capa.</p>
+            <div id="locationIconPreview" class="asset-preview small"></div>
+            <input id="locationIconInput" type="file" accept="image/*" />
+          </article>
+          <article class="asset-card">
+            <h3>Imagem do rodapé</h3>
+            <p class="asset-help">Use a imagem de chocolates e pelúcias para aparecer ao lado do rodapé promocional.</p>
+            <div id="promoImagePreview" class="asset-preview wide"></div>
+            <input id="promoImageInput" type="file" accept="image/*" />
+          </article>
+        </div>
+        <div class="visually-hidden" aria-hidden="true">
+          <div id="catalogBackgroundPreview"></div>
+          <input id="catalogBackgroundInput" type="file" accept="image/*" tabindex="-1" />
+        </div>
+      </section>
+
+      <section id="tab-aparencia" class="tab-panel">
+        <form id="settingsForm" class="settings-form">
+          <div class="form-grid">
+            <label>Nome da floricultura
+              <input id="businessName" type="text" />
+            </label>
+            <label>Nome do catálogo
+              <input id="catalogTitle" type="text" placeholder="Ex.: Catálogo de Flores" />
+            </label>
+            <label>Subtítulo da capa
+              <input id="catalogSubtitle" type="text" />
+            </label>
+            <label>WhatsApp
+              <input id="businessPhone" type="text" />
+            </label>
+            <label>Endereço
+              <input id="businessAddress" type="text" />
+            </label>
+            <label>Taxa de entrega
+              <input id="deliveryFee" type="text" />
+            </label>
+          </div>
+
+          <div class="form-grid font-grid">
+            <label>Fonte dos títulos
+              <select id="titleFont" class="font-select">
+                <option value="freestyle">Freestyle Script</option>
+                <option value="playfair">Playfair Display</option>
+                <option value="georgia">Georgia</option>
+                <option value="times">Times New Roman</option>
+                <option value="arial">Arial</option>
+                <option value="helvetica">Helvetica</option>
+                <option value="verdana">Verdana</option>
+                <option value="courier">Courier New</option>
+              </select>
+              <span id="titleFontSample" class="font-sample">Bouquet Flores</span>
+            </label>
+            <label>Fonte dos textos
+              <select id="bodyFont" class="font-select">
+                <option value="arial">Arial</option>
+                <option value="helvetica">Helvetica</option>
+                <option value="verdana">Verdana</option>
+                <option value="georgia">Georgia</option>
+                <option value="times">Times New Roman</option>
+                <option value="courier">Courier New</option>
+                <option value="freestyle">Freestyle Script</option>
+                <option value="playfair">Playfair Display</option>
+              </select>
+              <span id="bodyFontSample" class="font-sample">Flores para encantar</span>
+            </label>
+            <label>Fonte dos preços
+              <select id="priceFont" class="font-select">
+                <option value="georgia">Georgia</option>
+                <option value="times">Times New Roman</option>
+                <option value="arial">Arial</option>
+                <option value="helvetica">Helvetica</option>
+                <option value="freestyle">Freestyle Script</option>
+                <option value="verdana">Verdana</option>
+                <option value="playfair">Playfair Display</option>
+                <option value="courier">Courier New</option>
+              </select>
+              <span id="priceFontSample" class="font-sample">R$ 120,00</span>
+            </label>
           </div>
 
           <div class="form-grid">
@@ -31,43 +244,75 @@
               </select>
             </label>
           </div>
-          <label>Rodapé promocional<textarea id="promoFooter" rows="3"></textarea></label>
+
+          <label>Rodapé promocional
+            <textarea id="promoFooter" rows="4"></textarea>
+          </label>
+
           <div class="checkbox-row">
             <label><input id="hideUnavailablePdf" type="checkbox" /> Ocultar produtos indisponíveis do PDF</label>
             <label><input id="showPromoFooter" type="checkbox" /> Mostrar rodapé promocional nas páginas internas</label>
           </div>
+
+          <div class="visually-hidden" aria-hidden="true">
+            <input id="primaryColor" type="color" value="#5f7f5a" tabindex="-1" />
+            <input id="secondaryColor" type="color" value="#d69a8b" tabindex="-1" />
+            <input id="backgroundColor" type="color" value="#f7f2ea" tabindex="-1" />
+            <input id="accentColor" type="color" value="#c58f42" tabindex="-1" />
+            <input id="pdfPageColor" type="color" value="#ffffff" tabindex="-1" />
+            <input id="pdfCardColor" type="color" value="#ffffff" tabindex="-1" />
+            <input id="pdfCardBorderColor" type="color" value="#eadfd4" tabindex="-1" />
+            <input id="pdfTextColor" type="color" value="#263026" tabindex="-1" />
+            <input id="pdfMutedTextColor" type="color" value="#666d64" tabindex="-1" />
+            <input id="pdfPriceColor" type="color" value="#c58f42" tabindex="-1" />
+            <input id="promoBackgroundColor" type="color" value="#5f7f5a" tabindex="-1" />
+            <input id="promoTextColor" type="color" value="#ffffff" tabindex="-1" />
+          </div>
         </form>
       </section>
-
-
     </section>
   </main>
 
   <dialog id="productDialog" class="modal">
     <form id="productForm" method="dialog">
-      <header class="modal-header">
+      <div class="modal-header">
         <h3 id="productDialogTitle">Novo produto</h3>
-        <button type="button" id="closeProductDialog" class="icon-btn">×</button>
-      </header>
-      <input type="hidden" id="productId" />
-      <div class="form-grid">
-        <label>Nome do produto<input id="productName" required /></label>
-        <label>Preço<input id="productPrice" type="number" step="0.01" min="0" required /></label>
+        <button id="closeProductDialog" type="button" class="icon-btn">×</button>
       </div>
-      <label>Descrição<textarea id="productDescription" rows="4"></textarea></label>
+      <input id="productId" type="hidden" />
       <div class="form-grid">
-        <label>Categoria<select id="productCategory" required></select></label>
-        <label class="checkbox-label"><input id="productAvailable" type="checkbox" checked /> Produto disponível</label>
+        <label>Nome do produto
+          <input id="productName" type="text" required />
+        </label>
+        <label>Preço
+          <input id="productPrice" type="number" min="0" step="0.01" required />
+        </label>
       </div>
-      <label>Imagem do produto<input id="productImage" type="file" accept="image/*" /></label>
-      <div id="productImagePreview" class="product-image-preview"></div>
-      <footer class="modal-actions">
-        <button type="button" id="cancelProductBtn" class="secondary-btn">Cancelar</button>
+      <label>Descrição
+        <textarea id="productDescription" rows="4"></textarea>
+      </label>
+      <div class="form-grid">
+        <label>Categoria
+          <select id="productCategory"></select>
+        </label>
+        <label class="checkbox-label">
+          <input id="productAvailable" type="checkbox" checked /> Produto disponível
+        </label>
+      </div>
+      <label>Imagem do produto
+        <input id="productImage" type="file" accept="image/*" />
+      </label>
+      <div id="productImagePreview" class="product-image-preview">Nenhuma imagem selecionada</div>
+      <div class="modal-actions">
+        <button id="cancelProductBtn" type="button" class="secondary-btn">Cancelar</button>
         <button type="submit" class="primary-btn">Salvar produto</button>
-      </footer>
+      </div>
     </form>
   </dialog>
 
-  <script type="module" src="app.js"></script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script type="module" src="./app.js?v=layout-fix-20260701"></script>
 </body>
 </html>
