@@ -19,10 +19,11 @@ O visual é padronizado para manter todos os PDFs com a mesma identidade:
 - Creme: `#F5EBE3`
 - Bronze: `#805630`
 
-As fontes usadas no app e no catálogo são:
+As fontes usadas são:
 
-- **Magnólia Script** para títulos e destaques.
-- **Clear Sans** para textos, informações e preços.
+- **Clear Sans** em todo o app.
+- **Magnólia Script** apenas nos títulos decorativos do PDF.
+- **Clear Sans** nos textos, informações e preços do PDF.
 
 ## Como usar
 
