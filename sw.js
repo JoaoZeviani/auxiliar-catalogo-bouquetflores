@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auxiliar-catalogos-runtime-login-fix-1';
+const CACHE_NAME = 'auxiliar-catalogos-runtime-login-restaurado-1782930475174';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
