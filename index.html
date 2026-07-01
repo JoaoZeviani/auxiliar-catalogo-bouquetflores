@@ -123,11 +123,6 @@
       <section id="tab-imagens" class="tab-panel">
         <div class="asset-grid">
           <article class="asset-card">
-            <h3>Logotipo</h3>
-            <div id="logoPreview" class="asset-preview"></div>
-            <input type="file" id="logoInput" accept="image/*" />
-          </article>
-          <article class="asset-card">
             <h3>Foto da capa</h3>
             <div id="coverPreview" class="asset-preview wide"></div>
             <input type="file" id="coverInput" accept="image/*" />
@@ -173,80 +168,6 @@
 
       <section id="tab-aparencia" class="tab-panel">
         <form id="settingsForm" class="settings-form">
-          <div class="form-grid">
-            <label>Nome da floricultura<input id="businessName" /></label>
-
-          <label>Nome do catálogo<input id="catalogTitle" placeholder="Ex.: Catálogo de Flores" /></label>
-            <label>Subtítulo da capa<input id="catalogSubtitle" /></label>
-            <label>WhatsApp<input id="businessPhone" placeholder="Ex.: (16) 99132-7357" /></label>
-            <label>Endereço<input id="businessAddress" /></label>
-            <label>Taxa de entrega<input id="deliveryFee" placeholder="25,00" /></label>
-          </div>
-          <div class="form-grid font-grid">
-            <label>Fonte dos títulos
-              <select id="titleFont" class="font-select">
-                <option value="freestyle" style="font-family: 'Freestyle Script', cursive;">Freestyle Script</option>
-                <option value="playfair" style="font-family: 'Playfair Display', Georgia, serif;">Playfair Display</option>
-                <option value="georgia" style="font-family: Georgia, serif;">Georgia</option>
-                <option value="times" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
-                <option value="arial" style="font-family: Arial, sans-serif;">Arial</option>
-                <option value="helvetica" style="font-family: Helvetica, Arial, sans-serif;">Helvetica</option>
-                <option value="verdana" style="font-family: Verdana, sans-serif;">Verdana</option>
-                <option value="courier" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
-              </select>
-              <span id="titleFontSample" class="font-sample">Bouquet Flores</span>
-            </label>
-            <label>Fonte dos textos
-              <select id="bodyFont" class="font-select">
-                <option value="arial" style="font-family: Arial, sans-serif;">Arial</option>
-                <option value="helvetica" style="font-family: Helvetica, Arial, sans-serif;">Helvetica</option>
-                <option value="verdana" style="font-family: Verdana, sans-serif;">Verdana</option>
-                <option value="georgia" style="font-family: Georgia, serif;">Georgia</option>
-                <option value="times" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
-                <option value="courier" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
-                <option value="freestyle" style="font-family: 'Freestyle Script', cursive;">Freestyle Script</option>
-                <option value="playfair" style="font-family: 'Playfair Display', Georgia, serif;">Playfair Display</option>
-              </select>
-              <span id="bodyFontSample" class="font-sample">Flores para encantar</span>
-            </label>
-            <label>Fonte dos preços
-              <select id="priceFont" class="font-select">
-                <option value="georgia" style="font-family: Georgia, serif;">Georgia</option>
-                <option value="times" style="font-family: 'Times New Roman', Times, serif;">Times New Roman</option>
-                <option value="arial" style="font-family: Arial, sans-serif;">Arial</option>
-                <option value="helvetica" style="font-family: Helvetica, Arial, sans-serif;">Helvetica</option>
-                <option value="freestyle" style="font-family: 'Freestyle Script', cursive;">Freestyle Script</option>
-                <option value="verdana" style="font-family: Verdana, sans-serif;">Verdana</option>
-                <option value="playfair" style="font-family: 'Playfair Display', Georgia, serif;">Playfair Display</option>
-                <option value="courier" style="font-family: 'Courier New', Courier, monospace;">Courier New</option>
-              </select>
-              <span id="priceFontSample" class="font-sample">R$ 120,00</span>
-            </label>
-          </div>
-          <div class="form-grid colors">
-            <label>Cor principal<input id="primaryColor" type="color" /></label>
-            <label>Cor secundária<input id="secondaryColor" type="color" /></label>
-            <label>Fundo da capa<input id="backgroundColor" type="color" /></label>
-            <label>Destaque e preços<input id="accentColor" type="color" /></label>
-            <label>Fundo das páginas<input id="pdfPageColor" type="color" /></label>
-            <label>Fundo dos produtos<input id="pdfCardColor" type="color" /></label>
-            <label>Texto dos produtos<input id="pdfTextColor" type="color" /></label>
-            <label>Fundo do rodapé<input id="promoBackgroundColor" type="color" /></label>
-          </div>
-
-          <div class="form-grid">
-            <label>Imagem de fundo do catálogo
-              <select id="catalogBackgroundMode">
-                <option value="preset_1">Fundo 01 - folhas claras</option>
-                <option value="preset_2">Fundo 02 - eucalipto</option>
-                <option value="preset_3">Fundo 03 - floral rosado</option>
-                <option value="preset_4">Fundo 04 - verde suave</option>
-                <option value="preset_5">Fundo 05 - azul acinzentado</option>
-                <option value="custom">Personalizado enviado pela loja</option>
-                <option value="none">Sem imagem de fundo</option>
-              </select>
-            </label>
-          </div>
           <label>Rodapé promocional<textarea id="promoFooter" rows="3"></textarea></label>
           <div class="checkbox-row">
             <label><input id="hideUnavailablePdf" type="checkbox" /> Ocultar produtos indisponíveis do PDF</label>
