@@ -2,11 +2,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabaseConfig, ADMIN_EMAIL } from './supabase-config.js';
 
 const STORAGE_BUCKET = 'catalogo-imagens';
-const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024; // referência do plano gratuito: 1 GB
+const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024; // Supabase Free: 1 GB de File Storage. O banco Postgres tem limite separado.
 
 const DEFAULT_SETTINGS = {
   businessName: 'Sua Floricultura',
-  catalogSubtitle: 'Flores, presentes e carinho em cada detalhe',
+  catalogTitle: 'Catálogo de Flores', catalogSubtitle: 'Flores, presentes e carinho em cada detalhe',
   businessPhone: '',
   businessAddress: '',
   deliveryFee: '25,00',
@@ -744,7 +744,7 @@ function renderAssetPreview(id, url, emptyText) {
 function collectSettingsPayload() {
   return {
     businessName: $('businessName').value.trim(),
-    catalogSubtitle: $('catalogSubtitle').value.trim(),
+    catalogTitle: $('catalogTitle').value.trim(), catalogSubtitle: $('catalogSubtitle').value.trim(),
     businessPhone: $('businessPhone').value.trim(),
     businessAddress: $('businessAddress').value.trim(),
     deliveryFee: $('deliveryFee').value.trim(),
@@ -796,7 +796,7 @@ function scheduleSettingsAutoSave() {
 
 function bindSettingsUi() {
   const fields = [
-    'businessName', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
+    'businessName', 'catalogTitle', 'catalogSubtitle', 'businessPhone', 'businessAddress', 'deliveryFee',
     'titleFont', 'bodyFont', 'priceFont',
     'primaryColor', 'secondaryColor', 'backgroundColor', 'accentColor',
     'pdfPageColor', 'pdfCardColor', 'pdfTextColor', 'promoBackgroundColor', 'catalogBackgroundMode', 'promoFooter', 'hideUnavailablePdf', 'showPromoFooter'
@@ -822,6 +822,7 @@ function bindSettingsUi() {
 
 function fillSettingsForm() {
   $('businessName').value = state.settings.businessName || '';
+  $('catalogTitle').value = state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle;
   $('catalogSubtitle').value = state.settings.catalogSubtitle || '';
   $('businessPhone').value = state.settings.businessPhone || '';
   $('businessAddress').value = state.settings.businessAddress || '';
@@ -908,10 +909,10 @@ function renderStorageUsage({ loading = false } = {}) {
   if ($('storageUsedLabel')) $('storageUsedLabel').textContent = loading
     ? 'Calculando imagens cadastradas...'
     : `${formatBytes(used)} usados de ${formatBytes(STORAGE_LIMIT_BYTES)}`;
-  if ($('storageLimitLabel')) $('storageLimitLabel').textContent = `Referência: ${formatBytes(STORAGE_LIMIT_BYTES)}`;
+  if ($('storageLimitLabel')) $('storageLimitLabel').textContent = `Referência Supabase Storage: ${formatBytes(STORAGE_LIMIT_BYTES)}`;
   if ($('storageNote')) $('storageNote').textContent = state.storageEstimate.status === 'partial'
     ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
-    : 'Estimativa pelas imagens dos produtos e imagens fixas.';
+    : 'Estimativa pelas imagens/fundos do catálogo. O banco Postgres tem limite separado.';
 }
 
 let storageEstimateRun = 0;
@@ -1357,6 +1358,33 @@ function drawPdfFullPageBackground(pdf, backgroundImage, fallbackColor = '#fffff
   );
 }
 
+function withPdfOpacity(pdf, opacity, callback) {
+  let didSave = false;
+  try {
+    const GState = pdf.GState || window.jspdf?.GState;
+    if (typeof pdf.setGState === 'function' && GState) {
+      if (typeof pdf.saveGraphicsState === 'function') {
+        pdf.saveGraphicsState();
+        didSave = true;
+      }
+      pdf.setGState(new GState({ opacity }));
+      callback();
+      if (didSave && typeof pdf.restoreGraphicsState === 'function') pdf.restoreGraphicsState();
+      return;
+    }
+  } catch (_error) {
+    if (didSave && typeof pdf.restoreGraphicsState === 'function') {
+      try { pdf.restoreGraphicsState(); } catch (_restoreError) {}
+    }
+  }
+  callback();
+}
+
+function fillRoundedRectWithOpacity(pdf, x, y, w, h, rx, ry, color, opacity = 0.86) {
+  setFillHex(pdf, color);
+  withPdfOpacity(pdf, opacity, () => pdf.roundedRect(x, y, w, h, rx, ry, 'F'));
+}
+
 function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#5f7f5a', centerColor = '#d69a8b') {
   setFillHex(pdf, petalColor);
   const r = 3.2 * scale;
@@ -1397,47 +1425,34 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     pdf.circle(x - 8, 30 + i * 2.5, 1.1, 'S');
   }
 
-  setFillHex(pdf, cream);
-  pdf.roundedRect(16, 16, 178, 265, 7, 7, 'F');
+  fillRoundedRectWithOpacity(pdf, 16, 16, 178, 265, 7, 7, cream, 0.86);
   setDrawHex(pdf, softAccent);
   pdf.setLineWidth(0.35);
   pdf.roundedRect(20, 20, 170, 257, 5, 5, 'S');
 
-  if (logoImage) {
-    addImageContained(pdf, logoImage, 30, 24, 44, 32, 'logo-capa');
-  } else if (iconImage) {
+  if (logoImage) { addImageContained(pdf, logoImage, 50, 60, 110, 32, 'logo-capa'); } else if (iconImage) {
     addImageContained(pdf, iconImage, 38, 27, 24, 24, 'icone-capa');
   } else {
     drawSimpleFlower(pdf, 52, 39, 1.05, primary, accent);
   }
 
+  const catalogTitle = String(state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle).trim();
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(35);
+  pdf.setFontSize(28);
   setTextHex(pdf, primary);
-  pdf.text('CATÁLOGO', 181, 42, { align: 'right', maxWidth: 105 });
-  pdf.setFontSize(23);
-  setTextHex(pdf, accent);
-  pdf.text('DE FLORES', 181, 58, { align: 'right', maxWidth: 105 });
+  pdf.text(splitLines(pdf, catalogTitle.toUpperCase(), 105, 2), 181, 39, { align: 'right', maxWidth: 105, lineHeightFactor: 1.02 });
 
-  const business = String(state.settings.businessName || '').trim();
-  if (business) {
-    setPdfFont(pdf, 'title', 'bolditalic');
-    pdf.setFontSize(22);
-    setTextHex(pdf, primary);
-    pdf.text(business, 105, 83, { align: 'center', maxWidth: 158 });
-  }
+  // O nome da loja não é escrito na capa; o logotipo ocupa esse lugar.
 
   if (coverImage) {
-    setFillHex(pdf, '#ffffff');
-    pdf.roundedRect(28, 94, 154, 100, 5, 5, 'F');
+    fillRoundedRectWithOpacity(pdf, 28, 104, 154, 96, 5, 5, '#ffffff', 0.84);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.35);
-    pdf.roundedRect(28, 94, 154, 100, 5, 5, 'S');
-    addImageContained(pdf, coverImage, 32, 98, 146, 92, 'foto-capa');
+    pdf.roundedRect(28, 104, 154, 96, 5, 5, 'S');
+    addImageContained(pdf, coverImage, 32, 108, 146, 88, 'foto-capa');
   } else {
-    setFillHex(pdf, '#ffffff');
-    pdf.roundedRect(38, 100, 134, 86, 5, 5, 'F');
-    drawSimpleFlower(pdf, 105, 143, 3, primary, accent);
+    fillRoundedRectWithOpacity(pdf, 38, 106, 134, 86, 5, 5, '#ffffff', 0.84);
+    drawSimpleFlower(pdf, 105, 149, 3, primary, accent);
   }
 
   const subtitle = String(state.settings.catalogSubtitle || '').trim();
@@ -1445,7 +1460,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     setPdfFont(pdf, 'body', 'italic');
     pdf.setFontSize(14.5);
     setTextHex(pdf, primary);
-    pdf.text(subtitle, 105, 211, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
+    pdf.text(subtitle, 105, 219, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
   const phone = String(state.settings.businessPhone || '').trim();
@@ -1465,8 +1480,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     const x = startX + index * (itemW + itemGap);
     const boxY = 234;
     const boxH = 25;
-    setFillHex(pdf, '#ffffff');
-    pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'F');
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.84);
     setDrawHex(pdf, softAccent);
     pdf.setLineWidth(0.22);
     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
@@ -1506,17 +1520,14 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const bg = internalPageColor();
   const softLine = mixHex(accent, bg, 0.52);
 
-  setFillHex(pdf, accent);
-  pdf.roundedRect(x, y + 1.2, 2.4, 7.8, 1.2, 1.2, 'F');
-
   setPdfFont(pdf, 'title', 'bold');
   setPdfFontSize(pdf, 14.8, 'title');
   setTextHex(pdf, primary);
-  pdf.text(String(title || 'Produtos'), x + 5.5, y + 7.1, { maxWidth: width - 10 });
+  pdf.text(String(title || 'Produtos'), x, y + 7.1, { maxWidth: width });
 
   setDrawHex(pdf, softLine);
   pdf.setLineWidth(0.32);
-  pdf.line(x + 5.5, y + 10.5, x + width, y + 10.5);
+  pdf.line(x, y + 10.5, x + width, y + 10.5);
 }
 
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
@@ -1534,10 +1545,10 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const bg = internalPageColor();
   const softBorder = mixHex(accent, bg, 0.48);
 
-  setFillHex(pdf, cardColor);
+  fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);
   setDrawHex(pdf, softBorder);
   pdf.setLineWidth(0.26);
-  pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'FD');
+  pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');
 
   const padding = 1.2;
   const imageW = 50;
@@ -1555,7 +1566,7 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
 
   setTextHex(pdf, textColor);
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(10.4);
+  pdf.setFontSize(11.8);
   const nameLines = splitLines(pdf, product.nome, textW, 3);
   pdf.text(nameLines, textX, y + 8.2, { lineHeightFactor: 1.03 });
 
@@ -1563,7 +1574,7 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   if (descricao) {
     setTextHex(pdf, textColor);
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(6.7);
+    pdf.setFontSize(7.6);
     const descLines = splitLines(pdf, descricao, textW, 3);
     pdf.text(descLines, textX, y + 24.4, { lineHeightFactor: 1.06 });
   }
