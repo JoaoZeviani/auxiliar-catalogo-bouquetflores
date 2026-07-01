@@ -1701,25 +1701,43 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const bg = internalPageColor();
   const headerBg = mixHex(primary, bg, 0.055);
   const border = mixHex(accent, bg, 0.13);
-  const text = String(title || 'Produtos').toUpperCase();
-
-  setPdfFont(pdf, 'title', 'bold');
-  setPdfFontSize(pdf, 13.8, 'title');
+  const fullText = String(title || 'Produtos').toUpperCase();
 
   const paddingX = 5;
-  const textWidth = pdf.getTextWidth(text);
-  const labelWidth = Math.min(width, Math.max(34, textWidth + paddingX * 2));
+  const maxBoxWidth = Math.max(55, Math.min(width || 180, 210 - x - 12));
+  const maxTextWidth = Math.max(42, maxBoxWidth - paddingX * 2);
 
-  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, 10.8, 2.8, 2.8, headerBg, 0.78);
+  let fontSize = 13.6;
+  setPdfFont(pdf, 'title', 'bold');
+  setPdfFontSize(pdf, fontSize, 'title');
+
+  while (pdf.getTextWidth(fullText) > maxTextWidth && fontSize > 10.2) {
+    fontSize -= 0.3;
+    setPdfFontSize(pdf, fontSize, 'title');
+  }
+
+  let text = fullText;
+  if (pdf.getTextWidth(text) > maxTextWidth) {
+    while (text.length > 4 && pdf.getTextWidth(text + '...') > maxTextWidth) {
+      text = text.slice(0, -1).trim();
+    }
+    text = text + '...';
+  }
+
+  const textWidth = pdf.getTextWidth(text);
+  const labelWidth = Math.min(maxBoxWidth, Math.max(34, textWidth + paddingX * 2));
+  const boxHeight = 10.8;
+
+  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.78);
   setDrawHex(pdf, border);
   pdf.setLineWidth(0.2);
-  pdf.roundedRect(x, y, labelWidth, 10.8, 2.8, 2.8, 'S');
+  pdf.roundedRect(x, y, labelWidth, boxHeight, 2.8, 2.8, 'S');
 
   setFillHex(pdf, mixHex(accent, bg, 0.075));
   withPdfOpacity(pdf, 0.32, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
 
   setTextHex(pdf, '#000000');
-  pdf.text(text, x + paddingX, y + 7.2, { maxWidth: labelWidth - paddingX * 2 });
+  pdf.text(text, x + paddingX, y + 7.2);
 }
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
