@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { supabaseConfig, ADMIN_EMAIL } from './supabase-config.js';
 
 const STORAGE_BUCKET = 'catalogo-imagens';
+const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024; // referência do plano gratuito: 1 GB
 
 const DEFAULT_SETTINGS = {
   businessName: 'Sua Floricultura',
@@ -46,6 +47,7 @@ const state = {
   settings: { ...DEFAULT_SETTINGS },
   assets: { ...DEFAULT_ASSETS },
   editingProduct: null,
+  storageEstimate: { usedBytes: 0, status: 'idle' },
   supabaseReady: false
 };
 
@@ -56,8 +58,7 @@ const pageData = {
   produtos: ['Produtos', 'Cadastre, altere, exclua e controle a disponibilidade.'],
   categorias: ['Categorias', 'Organize a ordem das categorias no PDF.'],
   imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem promocional.'],
-  aparencia: ['Aparência do PDF', 'Escolha cores, informações da capa e rodapé promocional.'],
-  pdf: ['Gerar PDF', 'Crie o catálogo bonito para enviar aos clientes.']
+  aparencia: ['Aparência do PDF', 'Escolha cores, informações da capa e rodapé promocional.']
 };
 
 function toast(message, type = 'ok') {
@@ -148,6 +149,9 @@ function bindNavigation() {
   document.querySelectorAll('.tabs button').forEach((btn) => {
     btn.addEventListener('click', () => openTab(btn.dataset.tab));
   });
+  document.querySelectorAll('[data-jump]').forEach((btn) => {
+    btn.addEventListener('click', () => openTab(btn.dataset.jump));
+  });
 }
 
 function openTab(tab) {
@@ -221,11 +225,14 @@ async function startRealtimeListeners() {
       renderProductCategoryOptions();
       renderProducts();
       renderStats();
+      refreshStorageEstimate();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'produtos' }, async () => {
       await loadProducts();
       renderProducts();
+      renderCategories();
       renderStats();
+      refreshStorageEstimate();
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracoes' }, async () => {
       await loadSettings();
@@ -233,7 +240,7 @@ async function startRealtimeListeners() {
       setThemeVariables();
       fillSettingsForm();
       renderAssetPreviews();
-      $('pdfOnlyAvailable').checked = !!state.settings.hideUnavailablePdf;
+      refreshStorageEstimate();
     })
     .subscribe();
 }
@@ -247,7 +254,7 @@ async function loadAllData() {
   setThemeVariables();
   fillSettingsForm();
   renderAssetPreviews();
-  $('pdfOnlyAvailable').checked = !!state.settings.hideUnavailablePdf;
+  refreshStorageEstimate();
 }
 
 async function loadCategories() {
@@ -309,6 +316,7 @@ function bindProductUi() {
   $('closeProductDialog').addEventListener('click', () => $('productDialog').close());
   $('cancelProductBtn').addEventListener('click', () => $('productDialog').close());
   $('productSearch').addEventListener('input', renderProducts);
+  $('productSort').addEventListener('change', renderProducts);
   $('productImage').addEventListener('change', previewProductFile);
 
   $('productForm').addEventListener('submit', async (event) => {
@@ -423,7 +431,9 @@ async function saveProduct() {
 
     await loadProducts();
     renderProducts();
+    renderCategories();
     renderStats();
+    refreshStorageEstimate();
     $('productDialog').close();
   } catch (error) {
     console.error(error);
@@ -435,13 +445,45 @@ function categoryName(categoryId) {
   return state.categories.find((c) => c.id === categoryId)?.nome || 'Sem categoria';
 }
 
+function productCountByCategory(categoryId) {
+  return state.products.filter((product) => product.categoriaId === categoryId).length;
+}
+
+function pluralProduct(count) {
+  return count === 1 ? '1 produto' : `${count} produtos`;
+}
+
+function sortedProductsForApp(products) {
+  const sort = $('productSort')?.value || 'nome';
+  const categoryOrder = new Map(state.categories.map((category, index) => [category.id, index]));
+  const byName = (a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR');
+
+  return [...products].sort((a, b) => {
+    if (sort === 'categoria') {
+      const orderA = categoryOrder.has(a.categoriaId) ? categoryOrder.get(a.categoriaId) : 9999;
+      const orderB = categoryOrder.has(b.categoriaId) ? categoryOrder.get(b.categoriaId) : 9999;
+      return orderA - orderB || byName(a, b);
+    }
+
+    if (sort === 'preco') {
+      return Number(a.preco || 0) - Number(b.preco || 0) || byName(a, b);
+    }
+
+    if (sort === 'disponibilidade') {
+      return Number(b.disponivel) - Number(a.disponivel) || byName(a, b);
+    }
+
+    return byName(a, b);
+  });
+}
+
 function renderProducts() {
   const list = $('productsList');
   const search = $('productSearch')?.value?.trim()?.toLowerCase() || '';
-  const products = state.products.filter((p) => {
+  const products = sortedProductsForApp(state.products.filter((p) => {
     const haystack = `${p.nome || ''} ${p.descricao || ''} ${categoryName(p.categoriaId)}`.toLowerCase();
     return haystack.includes(search);
-  });
+  }));
 
   if (!products.length) {
     list.innerHTML = '<div class="welcome-card">Nenhum produto encontrado.</div>';
@@ -450,7 +492,7 @@ function renderProducts() {
 
   list.innerHTML = products.map((p) => `
     <article class="product-card">
-      <div class="product-card-img">${p.imagemUrl ? `<img class="product-thumb" src="${escapeHtml(p.imagemUrl)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;display:block!important;">` : '<span class="no-image">✿</span>'}</div>
+      <div class="product-card-img">${p.imagemUrl ? `<img class="product-thumb" src="${escapeHtml(p.imagemUrl)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;display:block!important;">` : '<span class="no-image">✿</span>'}</div>
       <div class="product-card-body">
         <div class="product-meta">
           <span class="badge">${escapeHtml(categoryName(p.categoriaId))}</span>
@@ -482,7 +524,9 @@ async function handleProductAction(action, id) {
     if (error) return toast('Erro ao alterar disponibilidade.', 'error');
     await loadProducts();
     renderProducts();
+    renderCategories();
     renderStats();
+    refreshStorageEstimate();
   }
   if (action === 'delete') {
     if (!confirm(`Excluir o produto "${product.nome}"?`)) return;
@@ -491,7 +535,9 @@ async function handleProductAction(action, id) {
     await deleteStoragePath(product.imagemPath);
     await loadProducts();
     renderProducts();
+    renderCategories();
     renderStats();
+    refreshStorageEstimate();
     toast('Produto excluído.');
   }
 }
@@ -507,6 +553,7 @@ function bindCategoryUi() {
     await loadCategories();
     renderCategories();
     renderProductCategoryOptions();
+    renderProducts();
     renderStats();
     $('categoryName').value = '';
     toast('Categoria adicionada.');
@@ -522,7 +569,10 @@ function renderCategories() {
 
   list.innerHTML = state.categories.map((c, index) => `
     <div class="category-row">
-      <input class="category-name-input" value="${escapeHtml(c.nome)}" data-id="${c.id}" aria-label="Nome da categoria">
+      <div class="category-main">
+        <input class="category-name-input" value="${escapeHtml(c.nome)}" data-id="${c.id}" aria-label="Nome da categoria">
+        <span class="category-count">${pluralProduct(productCountByCategory(c.id))}</span>
+      </div>
       <div class="category-actions">
         <button class="ghost-btn" data-action="up" data-id="${c.id}" ${index === 0 ? 'disabled' : ''}>Subir</button>
         <button class="ghost-btn" data-action="down" data-id="${c.id}" ${index === state.categories.length - 1 ? 'disabled' : ''}>Descer</button>
@@ -584,6 +634,7 @@ async function handleCategoryAction(action, id) {
     await loadCategories();
     renderCategories();
     renderProductCategoryOptions();
+    renderProducts();
   }
 }
 
@@ -618,6 +669,7 @@ function bindAssetsUi() {
         state.assets = nextAssets;
         await deleteStoragePath(previousPath);
         renderAssetPreviews();
+        refreshStorageEstimate();
         $(inputId).value = '';
         toast('Imagem fixa atualizada.');
       } catch (error) {
@@ -701,7 +753,6 @@ function bindSettingsUi() {
     if (error) return toast('Erro ao salvar aparência.', 'error');
     state.settings = { ...DEFAULT_SETTINGS, ...payload };
     setThemeVariables();
-    $('pdfOnlyAvailable').checked = !!state.settings.hideUnavailablePdf;
     toast('Aparência salva.');
   });
 }
@@ -736,12 +787,94 @@ function renderStats() {
   $('statCategories').textContent = state.categories.length;
 }
 
-function bindPdfUi() {
-  $('generatePdfBtn').addEventListener('click', () => generateCatalogPdf({ onlyAvailable: $('pdfOnlyAvailable').checked }));
-  $('quickPdfBtn').addEventListener('click', () => {
-    openTab('pdf');
-    generateCatalogPdf({ onlyAvailable: $('pdfOnlyAvailable').checked });
+function imageUrlsForStorageEstimate() {
+  const urls = new Set();
+
+  state.products.forEach((product) => {
+    if (product.imagemUrl) urls.add(product.imagemUrl);
   });
+
+  [
+    state.assets.logoUrl,
+    state.assets.coverUrl,
+    state.assets.iconUrl,
+    state.assets.whatsappIconUrl,
+    state.assets.deliveryIconUrl,
+    state.assets.locationIconUrl,
+    state.assets.promoImageUrl
+  ].forEach((url) => {
+    if (url) urls.add(url);
+  });
+
+  return [...urls];
+}
+
+function formatBytes(bytes = 0) {
+  const value = Number(bytes || 0);
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  if (value < 1024 * 1024 * 1024) return `${(value / 1024 / 1024).toFixed(1)} MB`;
+  return `${(value / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
+async function remoteFileSize(url) {
+  try {
+    const head = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    const len = Number(head.headers.get('content-length') || 0);
+    if (head.ok && len > 0) return len;
+  } catch (_error) {
+    // Alguns buckets não retornam HEAD/CORS; nesses casos tentamos baixar a imagem.
+  }
+
+  try {
+    const response = await fetch(url, { cache: 'force-cache' });
+    if (!response.ok) return 0;
+    const blob = await response.blob();
+    return blob.size || 0;
+  } catch (_error) {
+    return 0;
+  }
+}
+
+function renderStorageUsage({ loading = false } = {}) {
+  const used = Number(state.storageEstimate.usedBytes || 0);
+  const percent = Math.min(100, Math.max(0, used / STORAGE_LIMIT_BYTES * 100));
+  const percentText = `${percent < 0.1 && used > 0 ? '<0,1' : percent.toFixed(percent >= 10 ? 1 : 2).replace('.', ',')}%`;
+
+  if ($('storageBar')) $('storageBar').style.width = `${Math.max(percent, used > 0 ? 0.7 : 0)}%`;
+  if ($('storagePercent')) $('storagePercent').textContent = loading ? '...' : percentText;
+  if ($('storageUsedLabel')) $('storageUsedLabel').textContent = loading
+    ? 'Calculando imagens cadastradas...'
+    : `${formatBytes(used)} usados de ${formatBytes(STORAGE_LIMIT_BYTES)}`;
+  if ($('storageLimitLabel')) $('storageLimitLabel').textContent = `Referência: ${formatBytes(STORAGE_LIMIT_BYTES)}`;
+  if ($('storageNote')) $('storageNote').textContent = state.storageEstimate.status === 'partial'
+    ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
+    : 'Estimativa pelas imagens dos produtos e imagens fixas.';
+}
+
+let storageEstimateRun = 0;
+async function refreshStorageEstimate() {
+  const run = ++storageEstimateRun;
+  renderStorageUsage({ loading: true });
+  const urls = imageUrlsForStorageEstimate();
+  const textBytes = new Blob([JSON.stringify({ products: state.products, categories: state.categories, settings: state.settings, assets: state.assets })]).size;
+
+  const results = await Promise.allSettled(urls.map(remoteFileSize));
+  if (run !== storageEstimateRun) return;
+
+  const imageBytes = results.reduce((sum, result) => sum + (result.status === 'fulfilled' ? Number(result.value || 0) : 0), 0);
+  const failed = results.some((result) => result.status !== 'fulfilled');
+  state.storageEstimate = {
+    usedBytes: imageBytes + textBytes,
+    status: failed ? 'partial' : 'ok'
+  };
+  renderStorageUsage();
+}
+
+function bindPdfUi() {
+  const generate = () => generateCatalogPdf({ onlyAvailable: !!state.settings.hideUnavailablePdf });
+  $('quickPdfBtn').addEventListener('click', generate);
+  $('dashboardPdfBtn')?.addEventListener('click', generate);
 }
 
 function hexToRgb(hex) {
@@ -966,13 +1099,15 @@ function pdfFileName() {
 async function generateCatalogPdf({ onlyAvailable = true } = {}) {
   const button = $('generatePdfBtn');
   const quickButton = $('quickPdfBtn');
+  const dashboardButton = $('dashboardPdfBtn');
   try {
     if (!window.jspdf?.jsPDF) {
       toast('Biblioteca de PDF ainda carregando. Tente novamente.', 'error');
       return;
     }
-    button.disabled = true;
-    quickButton.disabled = true;
+    if (button) button.disabled = true;
+    if (quickButton) quickButton.disabled = true;
+    if (dashboardButton) dashboardButton.disabled = true;
     toast('Preparando imagens e montando o PDF...');
 
     const { jsPDF } = window.jspdf;
@@ -1111,8 +1246,9 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     console.error(error);
     toast('Erro ao gerar o PDF.', 'error');
   } finally {
-    button.disabled = false;
-    quickButton.disabled = false;
+    if (button) button.disabled = false;
+    if (quickButton) quickButton.disabled = false;
+    if (dashboardButton) dashboardButton.disabled = false;
   }
 }
 
