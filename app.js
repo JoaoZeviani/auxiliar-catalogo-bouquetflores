@@ -1696,25 +1696,30 @@ function drawHeader() {
 }
 
 function drawCategoryTitle(pdf, title, x, y, width) {
-  const palette = activeCatalogPalette();
-  const primary = normalizeHex(palette.categoryColor || palette.primaryColor, DEFAULT_SETTINGS.primaryColor);
-  const accent = normalizeHex(palette.categoryAccentColor || palette.accentColor, DEFAULT_SETTINGS.accentColor);
+  const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
+  const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
   const headerBg = mixHex(primary, bg, 0.055);
   const border = mixHex(accent, bg, 0.13);
-
-  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.78);
-  setDrawHex(pdf, border);
-  pdf.setLineWidth(0.20);
-  pdf.roundedRect(x, y, width, 10.8, 2.8, 2.8, 'S');
-
-  setFillHex(pdf, mixHex(accent, bg, 0.08));
-  withPdfOpacity(pdf, 0.32, () => pdf.rect(x + 4, y + 9.4, width - 8, 0.4, 'F'));
+  const text = String(title || 'Produtos').toUpperCase();
 
   setPdfFont(pdf, 'title', 'bold');
   setPdfFontSize(pdf, 13.8, 'title');
+
+  const paddingX = 5;
+  const textWidth = pdf.getTextWidth(text);
+  const labelWidth = Math.min(width, Math.max(34, textWidth + paddingX * 2));
+
+  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, 10.8, 2.8, 2.8, headerBg, 0.78);
+  setDrawHex(pdf, border);
+  pdf.setLineWidth(0.2);
+  pdf.roundedRect(x, y, labelWidth, 10.8, 2.8, 2.8, 'S');
+
+  setFillHex(pdf, mixHex(accent, bg, 0.075));
+  withPdfOpacity(pdf, 0.32, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
+
   setTextHex(pdf, '#000000');
-  pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 });
+  pdf.text(text, x + paddingX, y + 7.2, { maxWidth: labelWidth - paddingX * 2 });
 }
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
