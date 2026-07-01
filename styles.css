@@ -446,7 +446,7 @@ button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; 
   min-height: 180px;
   border-radius: 16px;
   background-size: cover;
-  background-position: center;
+  background-position: center bottom;
   border: 1px solid rgba(38, 48, 38, 0.13);
   overflow: hidden;
 }
@@ -509,7 +509,7 @@ button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; 
 .catalog-background-visual-preview {
   min-height: 220px;
   background-size: cover;
-  background-position: center;
+  background-position: center bottom;
 }
 
 @media (max-width: 760px) {

@@ -51,8 +51,10 @@ const CATALOG_BACKGROUND_PRESETS = {
   preset_3: './assets/fundos-catalogo/fundo_catalogo_03.jpg',
   preset_4: './assets/fundos-catalogo/fundo_catalogo_04.jpg',
   preset_5: './assets/fundos-catalogo/fundo_catalogo_05.jpg',
-  preset_6: './assets/fundos-catalogo/fundo_catalogo_06.jpg'
+  preset_6: './assets/fundos-catalogo/fundo_catalogo_06.jpg',
+  preset_7: './assets/fundos-catalogo/fundo_catalogo_07.jpg'
 };
+
 const CATALOG_BACKGROUND_PALETTES = {
   preset_1: {
     primaryColor: '#5f7253', secondaryColor: '#c7ad90', backgroundColor: '#f6f0e7', accentColor: '#b98b50',
@@ -85,12 +87,19 @@ const CATALOG_BACKGROUND_PALETTES = {
     promoBackgroundColor: '#546875', promoTextColor: '#ffffff'
   },
   preset_6: {
-    primaryColor: '#6b3b33', secondaryColor: '#c7a894', backgroundColor: '#f3e7dc', accentColor: '#8a4b41',
-    pdfPageColor: '#f3e7dc', pdfCardColor: '#fff8ef', pdfCardBorderColor: '#d6b9a5',
-    pdfTextColor: '#352724', pdfMutedTextColor: '#74635d', pdfPriceColor: '#7b332f',
-    promoBackgroundColor: '#6b3b33', promoTextColor: '#ffffff'
+    primaryColor: '#70433d', secondaryColor: '#d3b2a3', backgroundColor: '#f5ebe3', accentColor: '#9b5f57',
+    pdfPageColor: '#f5ebe3', pdfCardColor: '#fff8f1', pdfCardBorderColor: '#dec5b8',
+    pdfTextColor: '#392a27', pdfMutedTextColor: '#776964', pdfPriceColor: '#84413d',
+    promoBackgroundColor: '#70433d', promoTextColor: '#ffffff'
+  },
+  preset_7: {
+    primaryColor: '#7a4644', secondaryColor: '#d8b9aa', backgroundColor: '#f7ede5', accentColor: '#a8695f',
+    pdfPageColor: '#f7ede5', pdfCardColor: '#fff9f3', pdfCardBorderColor: '#e2c8ba',
+    pdfTextColor: '#3a2a28', pdfMutedTextColor: '#7c6a64', pdfPriceColor: '#8e4642',
+    promoBackgroundColor: '#7a4644', promoTextColor: '#ffffff'
   }
 };
+
 function normalizeCatalogBackgroundMode(mode) {
   return CATALOG_BACKGROUND_PRESETS[mode] ? mode : 'preset_1';
 }
@@ -120,7 +129,8 @@ function catalogBackgroundLabel(mode) {
     preset_3: 'Fundo 03 - floral rosado',
     preset_4: 'Fundo 04 - verde suave',
     preset_5: 'Fundo 05 - azul acinzentado',
-    preset_6: 'Fundo 06 - vermelho escuro sutil e bege'
+    preset_6: 'Fundo 06 - vinho suave e bege',
+    preset_7: 'Fundo 07 - floral vinho e bege'
   };
   return labels[normalizeCatalogBackgroundMode(mode)] || labels.preset_1;
 }
@@ -135,6 +145,7 @@ function renderCatalogBackgroundPreview() {
 
   if (preview) {
     preview.style.backgroundImage = `url("${url}")`;
+    preview.style.backgroundPosition = 'center bottom';
     preview.textContent = '';
   }
   if (label) label.textContent = catalogBackgroundLabel(mode);
@@ -986,13 +997,15 @@ function renderStorageUsage({ loading = false } = {}) {
   const usedText = `${formatBytes(used)} usados de ${formatBytes(STORAGE_LIMIT_BYTES)}`;
 
   if ($('storageBar')) $('storageBar').style.width = `${Math.max(percent, used > 0 ? 0.7 : 0)}%`;
-  if ($('storagePercent')) $('storagePercent').textContent = loading ? '...' : percentText;
-  if ($('storageStatus')) $('storageStatus').textContent = loading ? 'Calculando imagens...' : usedText;
+  if ($('storagePercent')) $('storagePercent').textContent = percentText;
+  if ($('storageStatus')) $('storageStatus').textContent = usedText;
   if ($('storageBytes')) $('storageBytes').textContent = usedText;
 
-  const note = state.storageEstimate.status === 'partial'
-    ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
-    : 'Estimativa feita pelas imagens cadastradas no Storage. Fundos fixos do app não entram nessa conta.';
+  const note = loading
+    ? 'Atualizando a estimativa das imagens cadastradas no Storage...'
+    : state.storageEstimate.status === 'partial'
+      ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
+      : 'Estimativa feita pelas imagens cadastradas no Storage. Fundos fixos do app não entram nessa conta.';
 
   if ($('storageNote')) $('storageNote').textContent = note;
 }
@@ -1010,11 +1023,16 @@ async function refreshStorageEstimate() {
     assets: state.assets
   })]).size;
 
-  const results = await Promise.allSettled(urls.map(remoteFileSize));
+  const timedOut = Symbol('storage-timeout');
+  const results = await Promise.race([
+    Promise.allSettled(urls.map(remoteFileSize)),
+    new Promise((resolve) => window.setTimeout(() => resolve(timedOut), 14000))
+  ]);
   if (run !== storageEstimateRun) return;
 
-  const imageBytes = results.reduce((sum, result) => sum + (result.status === 'fulfilled' ? Number(result.value || 0) : 0), 0);
-  const failed = results.some((result) => result.status !== 'fulfilled');
+  const safeResults = results === timedOut ? [] : results;
+  const imageBytes = safeResults.reduce((sum, result) => sum + (result.status === 'fulfilled' ? Number(result.value || 0) : 0), 0);
+  const failed = results === timedOut || safeResults.some((result) => result.status !== 'fulfilled');
 
   state.storageEstimate = {
     usedBytes: imageBytes + textBytes,
@@ -1164,6 +1182,47 @@ function containedImageRect(image, x, y, w, h) {
   };
 }
 
+function roundedCanvasPath(ctx, x, y, w, h, r) {
+  const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function roundedContainedImageDataUrl(image, targetWmm, targetHmm, radiusMm) {
+  if (!image?.element) return '';
+
+  const canvasW = Math.max(160, Math.round(targetWmm * 14));
+  const canvasH = Math.max(120, Math.round(targetHmm * 14));
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  roundedCanvasPath(ctx, 0, 0, canvasW, canvasH, Math.max(4, Math.round(radiusMm * 14)));
+  ctx.clip();
+
+  const scale = Math.min(canvasW / image.width, canvasH / image.height);
+  const drawW = image.width * scale;
+  const drawH = image.height * scale;
+  const dx = (canvasW - drawW) / 2;
+  const dy = (canvasH - drawH) / 2;
+  ctx.drawImage(image.element, dx, dy, drawW, drawH);
+
+  return canvas.toDataURL('image/png');
+}
+
 function addImageContained(pdf, image, x, y, w, h, alias) {
   const rect = containedImageRect(image, x, y, w, h);
   if (!rect) return false;
@@ -1175,10 +1234,16 @@ function addImageContainedRounded(pdf, image, x, y, w, h, alias, radius = 2.4) {
   const rect = containedImageRect(image, x, y, w, h);
   if (!rect) return false;
 
+  const roundedDataUrl = roundedContainedImageDataUrl(image, rect.w, rect.h, radius);
+  if (roundedDataUrl) {
+    pdf.addImage(roundedDataUrl, 'PNG', rect.x, rect.y, rect.w, rect.h, alias, 'FAST');
+    return true;
+  }
+
   try {
     if (typeof pdf.saveGraphicsState === 'function' && typeof pdf.restoreGraphicsState === 'function' && typeof pdf.clip === 'function') {
       pdf.saveGraphicsState();
-      pdf.roundedRect(rect.x, rect.y, rect.w, rect.h, radius, radius);
+      pdf.roundedRect(rect.x, rect.y, rect.w, rect.h, radius, radius, null);
       pdf.clip();
       pdf.addImage(image.dataUrl, imageType(image.dataUrl), rect.x, rect.y, rect.w, rect.h, alias, 'FAST');
       pdf.restoreGraphicsState();
@@ -1234,7 +1299,7 @@ async function imageUrlToImageData(url) {
     dataUrl = canvas.toDataURL('image/png');
   }
 
-  return { dataUrl, width, height };
+  return { dataUrl, width, height, element: img };
 }
 
 async function removeWhiteBackground(image, tolerance = 246) {
@@ -1576,15 +1641,15 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }
   ];
 
-  const itemW = 45;
-  const itemGap = 4;
+  const itemW = 55;
+  const itemGap = 5;
   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
   const startX = (w - itemsTotalW) / 2;
 
   items.forEach((item, index) => {
     const x = startX + index * (itemW + itemGap);
-    const boxY = 236;
-    const boxH = 25;
+    const boxY = 232;
+    const boxH = 31;
 
     fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.78);
     setDrawHex(pdf, softAccent);
@@ -1592,25 +1657,25 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
 
     if (item.icon) {
-      addImageContained(pdf, item.icon, x + 3.2, boxY + 8, 9.5, 9.5, `cover-icon-${index}`);
+      addImageContained(pdf, item.icon, x + 4.2, boxY + 9.2, 11.5, 11.5, `cover-icon-${index}`);
     } else {
       setFillHex(pdf, mixHex(accent, '#ffffff', 0.18));
-      pdf.circle(x + 8, boxY + 13, 4.8, 'F');
+      pdf.circle(x + 10, boxY + 15.2, 5.4, 'F');
       setPdfFont(pdf, 'body', 'bold');
-      setPdfFontSize(pdf, 7.1, 'body');
+      setPdfFontSize(pdf, 7.8, 'body');
       pdf.setTextColor(255, 255, 255);
-      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 8, boxY + 15.3, { align: 'center' });
+      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 10, boxY + 18.0, { align: 'center' });
     }
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 6.9, 'body');
+    setPdfFontSize(pdf, 8.0, 'body');
     setTextHex(pdf, primary);
-    pdf.text(item.label, x + 15, boxY + 8.2, { maxWidth: 25 });
+    pdf.text(item.label, x + 18, boxY + 9.3, { maxWidth: 33 });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 6.0, 'body');
+    setPdfFontSize(pdf, 7.15, 'body');
     setTextHex(pdf, '#4d554c');
-    pdf.text(splitLines(pdf, item.value, 26, 2), x + 15, boxY + 14.8, { maxWidth: 26, lineHeightFactor: 1.02 });
+    pdf.text(splitLines(pdf, item.value, 34, 3), x + 18, boxY + 16.4, { maxWidth: 34, lineHeightFactor: 1.04 });
   });
 }
 
@@ -1627,21 +1692,20 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const primary = normalizeHex(activeCatalogPalette().primaryColor, DEFAULT_SETTINGS.primaryColor);
   const accent = normalizeHex(activeCatalogPalette().accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
-  const headerBg = mixHex(primary, bg, 0.14);
-  const border = mixHex(accent, bg, 0.24);
-  const textColor = readableOnColor(headerBg);
+  const headerBg = mixHex(primary, bg, 0.07);
+  const border = mixHex(accent, bg, 0.16);
 
-  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.93);
+  fillRoundedRectWithOpacity(pdf, x, y, width, 10.8, 2.8, 2.8, headerBg, 0.82);
   setDrawHex(pdf, border);
-  pdf.setLineWidth(0.35);
+  pdf.setLineWidth(0.22);
   pdf.roundedRect(x, y, width, 10.8, 2.8, 2.8, 'S');
 
-  setFillHex(pdf, mixHex(accent, bg, 0.16));
-  withPdfOpacity(pdf, 0.72, () => pdf.rect(x + 4, y + 9.3, width - 8, 0.7, 'F'));
+  setFillHex(pdf, mixHex(accent, bg, 0.10));
+  withPdfOpacity(pdf, 0.42, () => pdf.rect(x + 4, y + 9.4, width - 8, 0.45, 'F'));
 
   setPdfFont(pdf, 'title', 'bold');
-  setPdfFontSize(pdf, 14.2, 'title');
-  setTextHex(pdf, textColor);
+  setPdfFontSize(pdf, 13.8, 'title');
+  setTextHex(pdf, primary);
   pdf.text(String(title || 'Produtos').toUpperCase(), x + 5, y + 7.2, { maxWidth: width - 10 });
 }
 
@@ -1674,7 +1738,8 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const textW = Math.max(34, imageX - textX - 1.2);
 
   if (image) {
-    addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 2.7);
+    fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#ffffff', 0.64);
+    addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 3.2);
   } else {
     drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, activeCatalogPalette().primaryColor, activeCatalogPalette().secondaryColor);
   }
