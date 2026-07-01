@@ -450,7 +450,7 @@ function renderProducts() {
 
   list.innerHTML = products.map((p) => `
     <article class="product-card">
-      <div class="product-card-img">${p.imagemUrl ? `<img class="product-thumb" src="${escapeHtml(p.imagemUrl)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="width:auto!important;height:auto!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;display:block!important;">` : '<span class="no-image">✿</span>'}</div>
+      <div class="product-card-img">${p.imagemUrl ? `<img class="product-thumb" src="${escapeHtml(p.imagemUrl)}" alt="${escapeHtml(p.nome)}" loading="lazy" style="width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center center!important;display:block!important;">` : '<span class="no-image">✿</span>'}</div>
       <div class="product-card-body">
         <div class="product-meta">
           <span class="badge">${escapeHtml(categoryName(p.categoriaId))}</span>
@@ -664,6 +664,12 @@ function renderAssetPreview(id, url, emptyText) {
 }
 
 function bindSettingsUi() {
+  ['titleFont', 'bodyFont', 'priceFont'].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener('change', updateFontSamples);
+  });
+  updateFontSamples();
+
   $('settingsForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const payload = {
@@ -720,6 +726,7 @@ function fillSettingsForm() {
   $('promoFooter').value = state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter;
   $('hideUnavailablePdf').checked = !!state.settings.hideUnavailablePdf;
   $('showPromoFooter').checked = !!state.settings.showPromoFooter;
+  updateFontSamples();
 }
 
 function renderStats() {
@@ -754,6 +761,34 @@ function mixHex(a, b, amount = 0.5) {
   return '#' + mix.map((value) => value.toString(16).padStart(2, '0')).join('');
 }
 
+
+const FONT_CSS_MAP = {
+  freestyle: "'Freestyle Script', 'Brush Script MT', cursive",
+  playfair: "'Playfair Display', Georgia, serif",
+  georgia: "Georgia, serif",
+  times: "'Times New Roman', Times, serif",
+  arial: "Arial, sans-serif",
+  helvetica: "Helvetica, Arial, sans-serif",
+  verdana: "Verdana, sans-serif",
+  courier: "'Courier New', Courier, monospace"
+};
+
+function updateFontSamples() {
+  const pairs = [
+    ['titleFont', 'titleFontSample'],
+    ['bodyFont', 'bodyFontSample'],
+    ['priceFont', 'priceFontSample']
+  ];
+  pairs.forEach(([selectId, sampleId]) => {
+    const select = $(selectId);
+    const sample = $(sampleId);
+    if (!select || !sample) return;
+    const family = FONT_CSS_MAP[select.value] || FONT_CSS_MAP.arial;
+    sample.style.fontFamily = family;
+    sample.dataset.font = select.value;
+    select.style.fontFamily = family;
+  });
+}
 
 const PDF_FONT_MAP = {
   freestyle: 'times',
@@ -987,15 +1022,15 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon });
 
     const layout = {
-      cols: 3,
-      left: 8,
-      top: 12,
-      gapX: 3.5,
-      gapY: 3.6,
-      cardW: 62,
-      cardH: 55,
-      categoryH: 10,
-      bottom: state.settings.showPromoFooter ? 266 : 288
+      cols: 2,
+      left: 4,
+      top: 9,
+      gapX: 1.2,
+      gapY: 2.8,
+      cardW: 100.4,
+      cardH: 52,
+      categoryH: 12,
+      bottom: state.settings.showPromoFooter ? 266 : 289
     };
 
     let col = 0;
@@ -1017,10 +1052,6 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
 
     const finishPartialRow = (fromCol = col) => {
       if (fromCol > 0 && fromCol < layout.cols) {
-        for (let emptyCol = fromCol; emptyCol < layout.cols; emptyCol += 1) {
-          const x = layout.left + emptyCol * (layout.cardW + layout.gapX);
-          drawEmptyProductDecoration(pdf, x, y, layout.cardW, layout.cardH);
-        }
         y += layout.cardH + layout.gapY;
         col = 0;
       }
@@ -1028,7 +1059,6 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
 
     const ensureSpace = (heightNeeded) => {
       if (y + heightNeeded <= layout.bottom) return;
-      drawPageRemainderDecoration(pdf, y, layout.bottom);
       addInternalPage();
     };
 
@@ -1047,16 +1077,15 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
     for (const group of categoryGroups) {
       finishPartialRow();
       ensureSpace(layout.categoryH + layout.cardH);
-      drawCategoryTitle(pdf, group.category.nome, layout.left, y, 194);
+      drawCategoryTitle(pdf, group.category.nome, layout.left, y, 202);
       y += layout.categoryH;
       hasContentOnPage = true;
 
       for (const product of group.products) {
         if (col === 0) ensureSpace(layout.cardH);
         if (y + layout.cardH > layout.bottom) {
-          drawPageRemainderDecoration(pdf, y, layout.bottom);
           addInternalPage();
-          drawCategoryTitle(pdf, group.category.nome, layout.left, y, 194);
+          drawCategoryTitle(pdf, group.category.nome, layout.left, y, 202);
           y += layout.categoryH;
         }
 
@@ -1075,7 +1104,6 @@ async function generateCatalogPdf({ onlyAvailable = true } = {}) {
       finishPartialRow();
     }
 
-    if (hasContentOnPage) drawPageRemainderDecoration(pdf, y, layout.bottom);
     drawPromoFooter(pdf, promoImage);
     pdf.save(pdfFileName());
     toast('PDF gerado com sucesso.');
@@ -1252,53 +1280,29 @@ function drawCategoryTitle(pdf, title, x, y, width) {
   const primary = normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor);
   const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
   const bg = internalPageColor();
-  const softAccent = mixHex(accent, bg, 0.7);
+  const card = normalizeHex(state.settings.pdfCardColor, '#fffaf1');
+  const softFill = mixHex(card, bg, 0.2);
+  const softLine = mixHex(accent, bg, 0.66);
+
+  setFillHex(pdf, softFill);
+  pdf.roundedRect(x, y + 0.8, width, 9.3, 3, 3, 'F');
+  setDrawHex(pdf, softLine);
+  pdf.setLineWidth(0.22);
+  pdf.line(x + 6, y + 5.4, x + 30, y + 5.4);
+  pdf.line(x + width - 30, y + 5.4, x + width - 6, y + 5.4);
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(13.4);
+  pdf.setFontSize(13.8);
   setTextHex(pdf, primary);
-  pdf.text(String(title || 'Produtos'), x, y + 5.5, { maxWidth: width - 24 });
-
-  setDrawHex(pdf, softAccent);
-  pdf.setLineWidth(0.35);
-  pdf.line(x, y + 8.2, x + width, y + 8.2);
-
-  setFillHex(pdf, accent);
-  pdf.circle(x + width - 4, y + 7.9, 1.1, 'F');
-  setDrawHex(pdf, softAccent);
-  pdf.line(x + width - 18, y + 7.9, x + width - 7, y + 7.9);
+  pdf.text(String(title || 'Produtos'), x + width / 2, y + 6.7, { align: 'center', maxWidth: width - 68 });
 }
 
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
-  const bg = internalPageColor();
-  const accent = mixHex(normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor), bg, 0.75);
-  const primary = mixHex(normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor), bg, 0.82);
-
-  setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.24);
-  pdf.roundedRect(x + 2, y + 3, w - 4, h - 6, 4, 4, 'S');
-  for (let i = 0; i < 4; i += 1) {
-    const bx = x + 14 + i * 9;
-    const by = y + h - 13 - i * 3;
-    pdf.line(bx, by, bx + 9, by - 11);
-    pdf.circle(bx + 6, by - 8, 1.15, 'S');
-  }
-  drawSimpleFlower(pdf, x + w - 14, y + 15, 0.38, primary, accent);
+  // Sem decoração para espaços vazios entre categorias.
 }
 
 function drawPageRemainderDecoration(pdf, y, bottom) {
-  if (bottom - y < 18) return;
-  const bg = internalPageColor();
-  const accent = mixHex(normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor), bg, 0.82);
-  const primary = mixHex(normalizeHex(state.settings.primaryColor, DEFAULT_SETTINGS.primaryColor), bg, 0.88);
-  const midY = y + Math.min(26, (bottom - y) / 2);
-
-  setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.2);
-  pdf.line(70, midY, 140, midY);
-  pdf.circle(105, midY, 1.2, 'S');
-  drawSimpleFlower(pdf, 61, midY, 0.35, primary, accent);
-  drawSimpleFlower(pdf, 149, midY, 0.35, primary, accent);
+  // Sem decoração automática no espaço restante.
 }
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
@@ -1306,50 +1310,50 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const accent = normalizeHex(state.settings.accentColor, DEFAULT_SETTINGS.accentColor);
   const textColor = normalizeHex(state.settings.pdfTextColor, DEFAULT_SETTINGS.pdfTextColor);
   const bg = internalPageColor();
-  const softBorder = mixHex(accent, bg, 0.5);
+  const softBorder = mixHex(accent, bg, 0.48);
 
   setFillHex(pdf, cardColor);
   setDrawHex(pdf, softBorder);
-  pdf.setLineWidth(0.32);
-  pdf.roundedRect(x, y, w, h, 4, 4, 'FD');
+  pdf.setLineWidth(0.26);
+  pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'FD');
 
-  const padding = 3.2;
-  const imageW = 26;
-  const imageH = h - 8;
+  const padding = 1.2;
+  const imageW = 50;
+  const imageH = h - 2.4;
   const imageX = x + w - imageW - padding;
-  const imageY = y + 4;
-  const textX = x + padding;
-  const textW = imageX - textX - 2.4;
+  const imageY = y + 1.2;
+  const textX = x + 2.2;
+  const textW = Math.max(34, imageX - textX - 1.0);
 
   if (image) {
     addImageContained(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`);
   } else {
-    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.55, state.settings.primaryColor, state.settings.secondaryColor);
+    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, state.settings.primaryColor, state.settings.secondaryColor);
   }
 
   setTextHex(pdf, textColor);
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(9.2);
+  pdf.setFontSize(10.4);
   const nameLines = splitLines(pdf, product.nome, textW, 3);
-  pdf.text(nameLines, textX, y + 8.6, { lineHeightFactor: 1.02 });
+  pdf.text(nameLines, textX, y + 8.2, { lineHeightFactor: 1.03 });
 
   const descricao = String(product.descricao || '').trim();
   if (descricao) {
     setTextHex(pdf, textColor);
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(6.25);
-    const descLines = splitLines(pdf, descricao, textW, 2);
-    pdf.text(descLines, textX, y + 25.2, { lineHeightFactor: 1.08 });
+    pdf.setFontSize(6.7);
+    const descLines = splitLines(pdf, descricao, textW, 3);
+    pdf.text(descLines, textX, y + 24.4, { lineHeightFactor: 1.06 });
   }
 
   setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.22);
-  pdf.line(textX, y + h - 16.5, textX + Math.min(25, textW), y + h - 16.5);
+  pdf.setLineWidth(0.2);
+  pdf.line(textX, y + h - 15, textX + Math.min(27, textW), y + h - 15);
 
   setTextHex(pdf, accent);
   setPdfFont(pdf, 'price', 'bold');
-  pdf.setFontSize(10.7);
-  pdf.text(formatCurrency(product.preco), textX, y + h - 6.4, { maxWidth: textW });
+  pdf.setFontSize(12.1);
+  pdf.text(formatCurrency(product.preco), textX, y + h - 5.5, { maxWidth: textW });
 }
 
 function drawPromoFooter(pdf, promoImage) {
