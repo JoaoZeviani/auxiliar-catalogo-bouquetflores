@@ -1576,9 +1576,10 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   setFillHex(pdf, marsala);
   pdf.rect(0, 0, 210, 297, 'F');
 
-  fillRoundedRectWithOpacity(pdf, 18, 18, 174, 261, 7, 7, cardColor, 0.92);
+  // Capa com apenas um painel principal, sem várias molduras sobrepostas.
+  fillRoundedRectWithOpacity(pdf, 18, 18, 174, 261, 7, 7, cardColor, 0.93);
   setDrawHex(pdf, bronze);
-  pdf.setLineWidth(0.42);
+  pdf.setLineWidth(0.38);
   pdf.roundedRect(18, 18, 174, 261, 7, 7, 'S');
 
   if (logoImage) {
@@ -1600,11 +1601,8 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   pdf.line(58, 121, 152, 121);
 
   if (coverImage) {
-    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#FFFFFF', 0.76);
-    setDrawHex(pdf, bronze);
-    pdf.setLineWidth(0.35);
-    pdf.roundedRect(28, 128, 154, 66, 5, 5, 'S');
-    addImageContainedRounded(pdf, coverImage, 32, 132, 146, 58, 'foto-capa', 3.2);
+    // Sem caixa/moldura envolvendo a imagem da capa.
+    addImageContainedRounded(pdf, coverImage, 28, 128, 154, 66, 'foto-capa', 3.2);
   }
 
   const subtitle = String(state.settings.catalogSubtitle || '').trim();
@@ -1612,53 +1610,47 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     setPdfFont(pdf, 'body', 'italic');
     pdf.setFontSize(14.5);
     setTextHex(pdf, textColor);
-    pdf.text(subtitle, 105, coverImage ? 214 : 170, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
+    pdf.text(subtitle, 105, coverImage ? 213 : 170, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
   const phone = String(state.settings.businessPhone || '').trim();
   const address = String(state.settings.businessAddress || '').trim();
   const deliveryFee = formatDeliveryFee(state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);
   const items = [
-    { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp', icon: whatsappIcon },
-    { label: 'ENTREGA', value: deliveryFee ? `Taxa ${deliveryFee}` : 'Taxa de entrega', icon: deliveryIcon },
-    { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }
+    { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp' },
+    { label: 'ENTREGA', value: deliveryFee ? `Taxa ${deliveryFee}` : 'Taxa de entrega' },
+    { label: 'LOCAL', value: address || 'Endereço da floricultura' }
   ];
 
-  const itemW = 47;
-  const itemGap = 5;
+  // Contatos menores, com texto maior e sem aparência de blocos grandes vazios.
+  const itemW = 48;
+  const itemGap = 4;
+  const itemH = 18;
   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
   const startX = (w - itemsTotalW) / 2;
+  const boxY = 238;
 
   items.forEach((item, index) => {
     const x = startX + index * (itemW + itemGap);
-    const boxY = 236;
-    const boxH = 23;
 
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 3.2, 3.2, '#FFFFFF', 0.82);
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, itemH, 2.4, 2.4, '#FFFFFF', 0.72);
     setDrawHex(pdf, bronze);
-    pdf.setLineWidth(0.2);
-    pdf.roundedRect(x, boxY, itemW, boxH, 3.2, 3.2, 'S');
-
-    if (item.icon) {
-      addImageContained(pdf, item.icon, x + 3.4, boxY + 6.3, 8.8, 8.8, `cover-icon-${index}`);
-    } else {
-      setFillHex(pdf, bronze);
-      pdf.circle(x + 7.8, boxY + 11.3, 4.2, 'F');
-      setPdfFont(pdf, 'body', 'bold');
-      setPdfFontSize(pdf, 6.4, 'body');
-      setTextHex(pdf, creme);
-      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 7.8, boxY + 13.7, { align: 'center' });
-    }
+    pdf.setLineWidth(0.16);
+    pdf.roundedRect(x, boxY, itemW, itemH, 2.4, 2.4, 'S');
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 7.4, 'body');
+    setPdfFontSize(pdf, 7.7, 'body');
     setTextHex(pdf, marsala);
-    pdf.text(item.label, x + 14, boxY + 7.2, { maxWidth: 29 });
+    pdf.text(item.label, x + itemW / 2, boxY + 5.7, { align: 'center', maxWidth: itemW - 5 });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 7.2, 'body');
+    setPdfFontSize(pdf, 7.8, 'body');
     setTextHex(pdf, textColor);
-    pdf.text(splitLines(pdf, item.value, 30, 2), x + 14, boxY + 13.7, { maxWidth: 30, lineHeightFactor: 1.02 });
+    pdf.text(splitLines(pdf, item.value, itemW - 6, 2), x + itemW / 2, boxY + 11.6, {
+      align: 'center',
+      maxWidth: itemW - 6,
+      lineHeightFactor: 0.98
+    });
   });
 }
 
