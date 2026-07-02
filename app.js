@@ -1617,38 +1617,55 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   const address = String(state.settings.businessAddress || '').trim();
   const deliveryFee = formatDeliveryFee(state.settings.deliveryFee || DEFAULT_SETTINGS.deliveryFee);
   const items = [
-    { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp' },
-    { label: 'ENTREGA', value: deliveryFee ? `Taxa ${deliveryFee}` : 'Taxa de entrega' },
-    { label: 'LOCAL', value: address || 'Endereço da floricultura' }
+    { label: 'WHATSAPP', value: phone || 'Consulte pelo WhatsApp', icon: whatsappIcon, fallback: 'W' },
+    { label: 'ENTREGA', value: deliveryFee ? `Taxa ${deliveryFee}` : 'Taxa de entrega', icon: deliveryIcon, fallback: 'E' },
+    { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon, fallback: 'L' }
   ];
 
-  // Contatos menores, com texto maior e sem aparência de blocos grandes vazios.
-  const itemW = 48;
+  // Contatos compactos, mas com ícone visível e texto legível.
+  const itemW = 49;
   const itemGap = 4;
-  const itemH = 18;
+  const itemH = 21;
   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
   const startX = (w - itemsTotalW) / 2;
-  const boxY = 238;
+  const boxY = 236;
 
   items.forEach((item, index) => {
     const x = startX + index * (itemW + itemGap);
 
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, itemH, 2.4, 2.4, '#FFFFFF', 0.72);
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, itemH, 2.6, 2.6, '#FFFFFF', 0.76);
     setDrawHex(pdf, bronze);
     pdf.setLineWidth(0.16);
-    pdf.roundedRect(x, boxY, itemW, itemH, 2.4, 2.4, 'S');
+    pdf.roundedRect(x, boxY, itemW, itemH, 2.6, 2.6, 'S');
+
+    const iconX = x + 3.1;
+    const iconY = boxY + 6.1;
+    const iconSize = 8.6;
+
+    if (item.icon) {
+      addImageContained(pdf, item.icon, iconX, iconY, iconSize, iconSize, `cover-icon-${index}`);
+    } else {
+      setFillHex(pdf, bronze);
+      pdf.circle(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 'F');
+      setPdfFont(pdf, 'body', 'bold');
+      setPdfFontSize(pdf, 6.1, 'body');
+      setTextHex(pdf, creme);
+      pdf.text(item.fallback, iconX + iconSize / 2, iconY + iconSize / 2 + 2.1, { align: 'center' });
+    }
+
+    const textX = x + 13.5;
+    const textW = itemW - 16;
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 7.7, 'body');
+    setPdfFontSize(pdf, 7.3, 'body');
     setTextHex(pdf, marsala);
-    pdf.text(item.label, x + itemW / 2, boxY + 5.7, { align: 'center', maxWidth: itemW - 5 });
+    pdf.text(item.label, textX, boxY + 6.2, { maxWidth: textW });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 7.8, 'body');
+    setPdfFontSize(pdf, 7.45, 'body');
     setTextHex(pdf, textColor);
-    pdf.text(splitLines(pdf, item.value, itemW - 6, 2), x + itemW / 2, boxY + 11.6, {
-      align: 'center',
-      maxWidth: itemW - 6,
+    pdf.text(splitLines(pdf, item.value, textW, 2), textX, boxY + 12.5, {
+      maxWidth: textW,
       lineHeightFactor: 0.98
     });
   });
@@ -1776,10 +1793,10 @@ function drawPromoFooter(pdf, promoImage) {
   pdf.line(10, y + 1.5, 200, y + 1.5);
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(12.7);
+  pdf.setFontSize(15.2);
   setTextHex(pdf, '#F5EBE3');
   const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);
-  pdf.text(lines, 18, y + 10, { maxWidth: 123, lineHeightFactor: 1.12 });
+  pdf.text(lines, 17, y + 10.8, { maxWidth: 126, lineHeightFactor: 1.03 });
 
   if (promoImage) {
     addImageContainedRounded(pdf, promoImage, 148, y + 1.5, 48, 24, 'rodape-promo', 2.2);
