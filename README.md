@@ -15,7 +15,7 @@ Aplicativo web para montar e atualizar o catálogo de produtos da floricultura.
 
 O visual é padronizado para manter todos os PDFs com a mesma identidade:
 
-- Marsala: `#7D1225`
+- Marsala: `#4D1225`
 - Creme: `#F5EBE3`
 - Bronze: `#805630`
 

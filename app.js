@@ -6,7 +6,7 @@ const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
 const APP_ICON_URL = './assets/icons/app-icon-192.png';
 
 const DEFAULT_CATEGORY_COLORS = [
-  '#7D1225',
+  '#4D1225',
   '#805630',
   '#9C2538',
   '#A8663D',
@@ -26,17 +26,17 @@ const DEFAULT_SETTINGS = {
   businessAddress: '',
   deliveryFee: '25,00',
 
-  primaryColor: '#7D1225',
+  primaryColor: '#4D1225',
   secondaryColor: '#F5EBE3',
   backgroundColor: '#F5EBE3',
   accentColor: '#805630',
 
-  pdfPageColor: '#7D1225',
+  pdfPageColor: '#4D1225',
   pdfCardColor: '#FFF8F2',
   pdfCardBorderColor: '#805630',
   pdfTextColor: '#2F1D19',
   pdfMutedTextColor: '#6B5149',
-  pdfPriceColor: '#7D1225',
+  pdfPriceColor: '#4D1225',
 
   promoBackgroundColor: '#805630',
   promoTextColor: '#F5EBE3',
@@ -58,16 +58,16 @@ const DEFAULT_ASSETS = {
 };
 
 const FIXED_CATALOG_PALETTE = {
-  primaryColor: '#7D1225',
+  primaryColor: '#4D1225',
   secondaryColor: '#F5EBE3',
   backgroundColor: '#F5EBE3',
   accentColor: '#805630',
-  pdfPageColor: '#7D1225',
+  pdfPageColor: '#4D1225',
   pdfCardColor: '#FFF8F2',
   pdfCardBorderColor: '#805630',
   pdfTextColor: '#2F1D19',
   pdfMutedTextColor: '#6B5149',
-  pdfPriceColor: '#7D1225',
+  pdfPriceColor: '#4D1225',
   promoBackgroundColor: '#805630',
   promoTextColor: '#F5EBE3'
 };
@@ -107,7 +107,7 @@ const pageData = {
 function toast(message, type = 'ok') {
   const el = $('toast');
   el.textContent = message;
-  el.style.background = type === 'error' ? '#9c2538' : '#7D1225';
+  el.style.background = type === 'error' ? '#9c2538' : '#4D1225';
   el.classList.add('show');
   window.clearTimeout(toast._timer);
   toast._timer = window.setTimeout(() => el.classList.remove('show'), 3600);
@@ -1162,7 +1162,7 @@ function colorIsWhite(hex) {
 }
 
 function internalPageColor() {
-  return '#7D1225';
+  return '#4D1225';
 }
 
 function readableOnColor(hex) {
@@ -1553,7 +1553,7 @@ function fillRoundedRectWithOpacity(pdf, x, y, w, h, rx, ry, color, opacity = 0.
   withPdfOpacity(pdf, opacity, () => pdf.roundedRect(x, y, w, h, rx, ry, 'F'));
 }
 
-function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#7D1225', centerColor = '#805630') {
+function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#4D1225', centerColor = '#805630') {
   setFillHex(pdf, petalColor);
   const r = 3.2 * scale;
   pdf.circle(cx, cy - 5 * scale, r, 'F');
@@ -1567,7 +1567,7 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#7D1225', center
 
 function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon }) {
   const w = 210;
-  const marsala = '#7D1225';
+  const marsala = '#4D1225';
   const creme = '#F5EBE3';
   const bronze = '#805630';
   const cardColor = '#FFF8F2';
@@ -1663,7 +1663,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
 }
 
 function drawInternalBackground(pdf) {
-  setFillHex(pdf, '#7D1225');
+  setFillHex(pdf, '#4D1225');
   pdf.rect(0, 0, 210, 297, 'F');
 }
 
@@ -1719,7 +1719,7 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
   const cardColor = '#FFF8F2';
-  const marsala = '#7D1225';
+  const marsala = '#4D1225';
   const bronze = '#805630';
   const textColor = '#2F1D19';
 
