@@ -31,14 +31,14 @@ const DEFAULT_SETTINGS = {
   backgroundColor: '#F5EBE3',
   accentColor: '#805630',
 
-  pdfPageColor: '#F5EBE3',
+  pdfPageColor: '#7D1225',
   pdfCardColor: '#FFF8F2',
-  pdfCardBorderColor: '#B98C62',
+  pdfCardBorderColor: '#805630',
   pdfTextColor: '#2F1D19',
   pdfMutedTextColor: '#6B5149',
   pdfPriceColor: '#7D1225',
 
-  promoBackgroundColor: '#7D1225',
+  promoBackgroundColor: '#805630',
   promoTextColor: '#F5EBE3',
   promoFooter: 'Adicione chocolate ou pelúcia\npara deixar seu pedido ainda mais especial',
 
@@ -62,13 +62,13 @@ const FIXED_CATALOG_PALETTE = {
   secondaryColor: '#F5EBE3',
   backgroundColor: '#F5EBE3',
   accentColor: '#805630',
-  pdfPageColor: '#F5EBE3',
+  pdfPageColor: '#7D1225',
   pdfCardColor: '#FFF8F2',
-  pdfCardBorderColor: '#B98C62',
+  pdfCardBorderColor: '#805630',
   pdfTextColor: '#2F1D19',
   pdfMutedTextColor: '#6B5149',
   pdfPriceColor: '#7D1225',
-  promoBackgroundColor: '#7D1225',
+  promoBackgroundColor: '#805630',
   promoTextColor: '#F5EBE3'
 };
 
@@ -1162,8 +1162,7 @@ function colorIsWhite(hex) {
 }
 
 function internalPageColor() {
-  const pageColor = normalizeHex(activeCatalogPalette().pdfPageColor, DEFAULT_SETTINGS.pdfPageColor);
-  return colorIsWhite(pageColor) ? normalizeHex(activeCatalogPalette().backgroundColor, DEFAULT_SETTINGS.backgroundColor) : pageColor;
+  return '#7D1225';
 }
 
 function readableOnColor(hex) {
@@ -1473,7 +1472,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
     if (!categoryGroups.length) {
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(20);
-      setTextHex(pdf, FIXED_CATALOG_PALETTE.primaryColor);
+      setTextHex(pdf, '#F5EBE3');
       pdf.text('Nenhum produto disponível para o PDF.', 105, 130, { align: 'center' });
       drawPromoFooter(pdf, promoImage);
       pdf.save(pdfFileName());
@@ -1568,50 +1567,50 @@ function drawSimpleFlower(pdf, cx, cy, scale = 1, petalColor = '#7D1225', center
 
 function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, locationIcon }) {
   const w = 210;
-  const primary = '#7D1225';
-  const accent = '#805630';
-  const coverBg = '#F5EBE3';
+  const marsala = '#7D1225';
+  const creme = '#F5EBE3';
+  const bronze = '#805630';
   const cardColor = '#FFF8F2';
-  const softAccent = mixHex(accent, coverBg, 0.55);
+  const textColor = '#2F1D19';
 
-  setFillHex(pdf, coverBg);
+  setFillHex(pdf, marsala);
   pdf.rect(0, 0, 210, 297, 'F');
 
-  setDrawHex(pdf, mixHex(primary, coverBg, 0.58));
-  pdf.setLineWidth(0.45);
-  pdf.roundedRect(13, 14, 184, 269, 7, 7, 'S');
+  setDrawHex(pdf, creme);
+  pdf.setLineWidth(0.48);
+  pdf.roundedRect(12, 13, 186, 271, 7, 7, 'S');
 
-  setDrawHex(pdf, mixHex(accent, coverBg, 0.42));
-  pdf.setLineWidth(0.25);
-  pdf.roundedRect(20, 21, 170, 255, 4, 4, 'S');
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.30);
+  pdf.roundedRect(19, 20, 172, 257, 4.5, 4.5, 'S');
 
-  fillRoundedRectWithOpacity(pdf, 16, 17, 178, 263, 7, 7, cardColor, 0.78);
+  fillRoundedRectWithOpacity(pdf, 17, 18, 176, 261, 7, 7, cardColor, 0.91);
 
-  setDrawHex(pdf, softAccent);
-  pdf.setLineWidth(0.35);
-  pdf.roundedRect(20, 21, 170, 255, 5, 5, 'S');
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.34);
+  pdf.roundedRect(22, 23, 166, 251, 5, 5, 'S');
 
   if (logoImage) {
     addImageContained(pdf, logoImage, 34, 35, 142, 61, 'logo-capa');
   } else if (iconImage) {
     addImageContained(pdf, iconImage, 91, 40, 28, 28, 'icone-capa');
   } else {
-    drawSimpleFlower(pdf, 105, 52, 1.08, primary, accent);
+    drawSimpleFlower(pdf, 105, 52, 1.08, marsala, bronze);
   }
 
   const catalogTitle = String(state.settings.catalogTitle || DEFAULT_SETTINGS.catalogTitle).trim();
   setPdfFont(pdf, 'title', 'bold');
   pdf.setFontSize(30);
-  setTextHex(pdf, primary);
+  setTextHex(pdf, marsala);
   pdf.text(splitLines(pdf, catalogTitle, 150, 2), 105, 110, { align: 'center', maxWidth: 150, lineHeightFactor: 1.03 });
 
-  setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.32);
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.34);
   pdf.line(58, 121, 152, 121);
 
   if (coverImage) {
-    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#ffffff', 0.70);
-    setDrawHex(pdf, softAccent);
+    fillRoundedRectWithOpacity(pdf, 28, 128, 154, 66, 5, 5, '#FFFFFF', 0.76);
+    setDrawHex(pdf, bronze);
     pdf.setLineWidth(0.35);
     pdf.roundedRect(28, 128, 154, 66, 5, 5, 'S');
     addImageContainedRounded(pdf, coverImage, 32, 132, 146, 58, 'foto-capa', 3.2);
@@ -1621,7 +1620,7 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   if (subtitle) {
     setPdfFont(pdf, 'body', 'italic');
     pdf.setFontSize(14.5);
-    setTextHex(pdf, '#2F1D19');
+    setTextHex(pdf, textColor);
     pdf.text(subtitle, 105, coverImage ? 214 : 170, { align: 'center', maxWidth: 155, lineHeightFactor: 1.15 });
   }
 
@@ -1644,43 +1643,50 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     const boxY = 232;
     const boxH = 31;
 
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#ffffff', 0.75);
-    setDrawHex(pdf, softAccent);
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#FFFFFF', 0.84);
+    setDrawHex(pdf, bronze);
     pdf.setLineWidth(0.22);
     pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
 
     if (item.icon) {
       addImageContained(pdf, item.icon, x + 4.2, boxY + 9.2, 11.5, 11.5, `cover-icon-${index}`);
     } else {
-      setFillHex(pdf, mixHex(accent, '#ffffff', 0.18));
+      setFillHex(pdf, bronze);
       pdf.circle(x + 10, boxY + 15.2, 5.4, 'F');
       setPdfFont(pdf, 'body', 'bold');
       setPdfFontSize(pdf, 7.8, 'body');
-      pdf.setTextColor(255, 255, 255);
+      setTextHex(pdf, creme);
       pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 10, boxY + 18.0, { align: 'center' });
     }
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 8.2, 'body');
-    setTextHex(pdf, primary);
+    setPdfFontSize(pdf, 8.4, 'body');
+    setTextHex(pdf, marsala);
     pdf.text(item.label, x + 18, boxY + 9.3, { maxWidth: 33 });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 7.4, 'body');
-    setTextHex(pdf, '#6B5149');
+    setPdfFontSize(pdf, 7.7, 'body');
+    setTextHex(pdf, textColor);
     pdf.text(splitLines(pdf, item.value, 34, 3), x + 18, boxY + 16.4, { maxWidth: 34, lineHeightFactor: 1.04 });
   });
 }
 
 function drawInternalBackground(pdf) {
-  const bg = internalPageColor();
-  setFillHex(pdf, bg);
+  const marsala = '#7D1225';
+  const creme = '#F5EBE3';
+  const bronze = '#805630';
+
+  setFillHex(pdf, marsala);
   pdf.rect(0, 0, 210, 297, 'F');
 
-  setDrawHex(pdf, mixHex('#805630', bg, 0.72));
-  pdf.setLineWidth(0.18);
-  pdf.line(8, 7, 202, 7);
-  pdf.line(8, 290, 202, 290);
+  setDrawHex(pdf, creme);
+  pdf.setLineWidth(0.20);
+  pdf.roundedRect(7, 7, 196, 283, 4, 4, 'S');
+
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.16);
+  pdf.line(12, 12, 198, 12);
+  pdf.line(12, 285, 198, 285);
 }
 
 function drawHeader() {
@@ -1691,17 +1697,8 @@ function drawCategoryTitle(pdf, categoryOrTitle, x, y, width) {
   const title = typeof categoryOrTitle === 'object' && categoryOrTitle !== null
     ? categoryOrTitle.nome
     : categoryOrTitle;
-  const categoryId = typeof categoryOrTitle === 'object' && categoryOrTitle !== null
-    ? categoryOrTitle.id
-    : null;
 
-  const primary = categoryId ? categoryColor(categoryId) : '#7D1225';
-  const accent = '#805630';
-  const bg = internalPageColor();
-  const headerBg = mixHex(primary, bg, 0.10);
-  const border = mixHex(primary, bg, 0.28);
   const fullText = String(title || 'Produtos').toUpperCase();
-
   const paddingX = 5;
   const maxBoxWidth = Math.max(55, Math.min(width || 180, 210 - x - 12));
   const maxTextWidth = Math.max(42, maxBoxWidth - paddingX * 2);
@@ -1723,19 +1720,16 @@ function drawCategoryTitle(pdf, categoryOrTitle, x, y, width) {
     text += '...';
   }
 
-  const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2));
+  const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2 + 3.5));
   const boxHeight = 10.8;
 
-  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, headerBg, 0.82);
-  setDrawHex(pdf, border);
-  pdf.setLineWidth(0.22);
+  fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, '#F5EBE3', 0.97);
+  setDrawHex(pdf, '#805630');
+  pdf.setLineWidth(0.24);
   pdf.roundedRect(x, y, labelWidth, boxHeight, 2.8, 2.8, 'S');
 
-  setFillHex(pdf, mixHex(accent, bg, 0.10));
-  withPdfOpacity(pdf, 0.26, () => pdf.rect(x + 4, y + 9.4, Math.max(8, labelWidth - 8), 0.42, 'F'));
-
-  setFillHex(pdf, primary);
-  withPdfOpacity(pdf, 0.88, () => pdf.roundedRect(x + 3.4, y + 3, 2.4, 4.8, 1.1, 1.1, 'F'));
+  setFillHex(pdf, '#7D1225');
+  withPdfOpacity(pdf, 0.90, () => pdf.roundedRect(x + 3.4, y + 3, 2.4, 4.8, 1.1, 1.1, 'F'));
 
   setTextHex(pdf, '#000000');
   pdf.text(text, x + paddingX + 3.5, y + 7.2);
@@ -1750,14 +1744,13 @@ function drawPageRemainderDecoration(pdf, y, bottom) {
 
 function drawProductCard(pdf, product, x, y, w, h, image) {
   const cardColor = '#FFF8F2';
-  const accent = categoryColor(product.categoriaId);
+  const marsala = '#7D1225';
+  const bronze = '#805630';
   const textColor = '#2F1D19';
-  const bg = internalPageColor();
-  const softBorder = mixHex(accent, bg, 0.40);
 
-  fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.86);
-  setDrawHex(pdf, softBorder);
-  pdf.setLineWidth(0.26);
+  fillRoundedRectWithOpacity(pdf, x, y, w, h, 3.2, 3.2, cardColor, 0.96);
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.24);
   pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');
 
   const padding = 1.5;
@@ -1769,10 +1762,10 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const textW = Math.max(34, imageX - textX - 1.2);
 
   if (image) {
-    fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#ffffff', 0.62);
+    fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#FFFFFF', 0.74);
     addImageContainedRounded(pdf, image, imageX, imageY, imageW, imageH, `produto-${product.id}`, 3.4);
   } else {
-    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, '#7D1225', '#805630');
+    drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, marsala, bronze);
   }
 
   const descricao = String(product.descricao || '').trim();
@@ -1794,11 +1787,11 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
 
   const lineY = hasDescricao ? y + h - 15 : y + 24.8;
   const priceY = hasDescricao ? y + h - 5.5 : y + 32.4;
-  setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.2);
+  setDrawHex(pdf, bronze);
+  pdf.setLineWidth(0.22);
   pdf.line(textX, lineY, textX + Math.min(27, textW), lineY);
 
-  setTextHex(pdf, '#7D1225');
+  setTextHex(pdf, marsala);
   setPdfFont(pdf, 'price', 'bold');
   pdf.setFontSize(hasDescricao ? 12.2 : 12.9);
   pdf.text(formatCurrency(product.preco), textX, priceY, { maxWidth: textW });
@@ -1809,12 +1802,10 @@ function drawPromoFooter(pdf, promoImage) {
 
   const y = 270;
   const h = 27;
-  const bg = '#7D1225';
-  const accent = '#805630';
 
-  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, bg, 0.72);
-  setDrawHex(pdf, accent);
-  pdf.setLineWidth(0.35);
+  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, '#805630', 0.92);
+  setDrawHex(pdf, '#F5EBE3');
+  pdf.setLineWidth(0.32);
   pdf.line(10, y + 1.5, 200, y + 1.5);
 
   setPdfFont(pdf, 'title', 'bold');
