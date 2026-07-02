@@ -1576,19 +1576,10 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
   setFillHex(pdf, marsala);
   pdf.rect(0, 0, 210, 297, 'F');
 
-  setDrawHex(pdf, creme);
-  pdf.setLineWidth(0.48);
-  pdf.roundedRect(12, 13, 186, 271, 7, 7, 'S');
-
+  fillRoundedRectWithOpacity(pdf, 18, 18, 174, 261, 7, 7, cardColor, 0.92);
   setDrawHex(pdf, bronze);
-  pdf.setLineWidth(0.30);
-  pdf.roundedRect(19, 20, 172, 257, 4.5, 4.5, 'S');
-
-  fillRoundedRectWithOpacity(pdf, 17, 18, 176, 261, 7, 7, cardColor, 0.91);
-
-  setDrawHex(pdf, bronze);
-  pdf.setLineWidth(0.34);
-  pdf.roundedRect(22, 23, 166, 251, 5, 5, 'S');
+  pdf.setLineWidth(0.42);
+  pdf.roundedRect(18, 18, 174, 261, 7, 7, 'S');
 
   if (logoImage) {
     addImageContained(pdf, logoImage, 34, 35, 142, 61, 'logo-capa');
@@ -1633,60 +1624,47 @@ function drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, delive
     { label: 'LOCAL', value: address || 'Endereço da floricultura', icon: locationIcon }
   ];
 
-  const itemW = 55;
+  const itemW = 47;
   const itemGap = 5;
   const itemsTotalW = itemW * items.length + itemGap * (items.length - 1);
   const startX = (w - itemsTotalW) / 2;
 
   items.forEach((item, index) => {
     const x = startX + index * (itemW + itemGap);
-    const boxY = 232;
-    const boxH = 31;
+    const boxY = 236;
+    const boxH = 23;
 
-    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 4, 4, '#FFFFFF', 0.84);
+    fillRoundedRectWithOpacity(pdf, x, boxY, itemW, boxH, 3.2, 3.2, '#FFFFFF', 0.82);
     setDrawHex(pdf, bronze);
-    pdf.setLineWidth(0.22);
-    pdf.roundedRect(x, boxY, itemW, boxH, 4, 4, 'S');
+    pdf.setLineWidth(0.2);
+    pdf.roundedRect(x, boxY, itemW, boxH, 3.2, 3.2, 'S');
 
     if (item.icon) {
-      addImageContained(pdf, item.icon, x + 4.2, boxY + 9.2, 11.5, 11.5, `cover-icon-${index}`);
+      addImageContained(pdf, item.icon, x + 3.4, boxY + 6.3, 8.8, 8.8, `cover-icon-${index}`);
     } else {
       setFillHex(pdf, bronze);
-      pdf.circle(x + 10, boxY + 15.2, 5.4, 'F');
+      pdf.circle(x + 7.8, boxY + 11.3, 4.2, 'F');
       setPdfFont(pdf, 'body', 'bold');
-      setPdfFontSize(pdf, 7.8, 'body');
+      setPdfFontSize(pdf, 6.4, 'body');
       setTextHex(pdf, creme);
-      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 10, boxY + 18.0, { align: 'center' });
+      pdf.text(index === 0 ? 'W' : index === 1 ? 'E' : 'L', x + 7.8, boxY + 13.7, { align: 'center' });
     }
 
     setPdfFont(pdf, 'body', 'bold');
-    setPdfFontSize(pdf, 8.4, 'body');
+    setPdfFontSize(pdf, 7.4, 'body');
     setTextHex(pdf, marsala);
-    pdf.text(item.label, x + 18, boxY + 9.3, { maxWidth: 33 });
+    pdf.text(item.label, x + 14, boxY + 7.2, { maxWidth: 29 });
 
     setPdfFont(pdf, 'body', 'normal');
-    setPdfFontSize(pdf, 7.7, 'body');
+    setPdfFontSize(pdf, 7.2, 'body');
     setTextHex(pdf, textColor);
-    pdf.text(splitLines(pdf, item.value, 34, 3), x + 18, boxY + 16.4, { maxWidth: 34, lineHeightFactor: 1.04 });
+    pdf.text(splitLines(pdf, item.value, 30, 2), x + 14, boxY + 13.7, { maxWidth: 30, lineHeightFactor: 1.02 });
   });
 }
 
 function drawInternalBackground(pdf) {
-  const marsala = '#7D1225';
-  const creme = '#F5EBE3';
-  const bronze = '#805630';
-
-  setFillHex(pdf, marsala);
+  setFillHex(pdf, '#7D1225');
   pdf.rect(0, 0, 210, 297, 'F');
-
-  setDrawHex(pdf, creme);
-  pdf.setLineWidth(0.20);
-  pdf.roundedRect(7, 7, 196, 283, 4, 4, 'S');
-
-  setDrawHex(pdf, bronze);
-  pdf.setLineWidth(0.16);
-  pdf.line(12, 12, 198, 12);
-  pdf.line(12, 285, 198, 285);
 }
 
 function drawHeader() {
@@ -1720,7 +1698,7 @@ function drawCategoryTitle(pdf, categoryOrTitle, x, y, width) {
     text += '...';
   }
 
-  const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2 + 3.5));
+  const labelWidth = Math.min(maxBoxWidth, Math.max(34, pdf.getTextWidth(text) + paddingX * 2));
   const boxHeight = 10.8;
 
   fillRoundedRectWithOpacity(pdf, x, y, labelWidth, boxHeight, 2.8, 2.8, '#F5EBE3', 0.97);
@@ -1728,11 +1706,8 @@ function drawCategoryTitle(pdf, categoryOrTitle, x, y, width) {
   pdf.setLineWidth(0.24);
   pdf.roundedRect(x, y, labelWidth, boxHeight, 2.8, 2.8, 'S');
 
-  setFillHex(pdf, '#7D1225');
-  withPdfOpacity(pdf, 0.90, () => pdf.roundedRect(x + 3.4, y + 3, 2.4, 4.8, 1.1, 1.1, 'F'));
-
   setTextHex(pdf, '#000000');
-  pdf.text(text, x + paddingX + 3.5, y + 7.2);
+  pdf.text(text, x + paddingX, y + 7.2);
 }
 function drawEmptyProductDecoration(pdf, x, y, w, h) {
   // Sem decoração para espaços vazios entre categorias.
@@ -1803,7 +1778,7 @@ function drawPromoFooter(pdf, promoImage) {
   const y = 270;
   const h = 27;
 
-  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, '#805630', 0.92);
+  fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, '#805630', 0.94);
   setDrawHex(pdf, '#F5EBE3');
   pdf.setLineWidth(0.32);
   pdf.line(10, y + 1.5, 200, y + 1.5);
