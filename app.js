@@ -1417,13 +1417,111 @@ function pdfFileName() {
   return 'catálogo.pdf';
 }
 
+async 
+function canUseFileSystemSave() {
+  return Boolean(window.showSaveFilePicker && window.indexedDB && window.isSecureContext);
+}
+
+function openCatalogFileHandleDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('catalogo-pdf-file-handle', 1);
+
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore('handles');
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function getSavedCatalogFileHandle() {
+  if (!window.indexedDB) return null;
+
+  try {
+    const db = await openCatalogFileHandleDb();
+
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction('handles', 'readonly');
+      const store = transaction.objectStore('handles');
+      const request = store.get('catalogo-pdf');
+
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+      transaction.oncomplete = () => db.close();
+      transaction.onerror = () => db.close();
+    });
+  } catch (error) {
+    console.warn('Não foi possível ler o local salvo do PDF.', error);
+    return null;
+  }
+}
+
+async function setSavedCatalogFileHandle(handle) {
+  if (!window.indexedDB || !handle) return;
+
+  try {
+    const db = await openCatalogFileHandleDb();
+
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction('handles', 'readwrite');
+      const store = transaction.objectStore('handles');
+      store.put(handle, 'catalogo-pdf');
+
+      transaction.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.warn('Não foi possível salvar a referência do arquivo do PDF.', error);
+  }
+}
+
+async function verifyCatalogFilePermission(handle) {
+  if (!handle || !handle.queryPermission || !handle.requestPermission) return false;
+
+  const options = { mode: 'readwrite' };
+
+  if ((await handle.queryPermission(options)) === 'granted') {
+    return true;
+  }
+
+  return (await handle.requestPermission(options)) === 'granted';
+}
+
+async function writePdfToHandle(handle, blob) {
+  const writable = await handle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
 async function savePdfDocument(pdf) {
   const fileName = pdfFileName();
   const blob = pdf.output('blob');
 
-  if (window.showSaveFilePicker && window.isSecureContext) {
+  if (canUseFileSystemSave()) {
+    const savedHandle = await getSavedCatalogFileHandle();
+
+    if (savedHandle) {
+      try {
+        if (await verifyCatalogFilePermission(savedHandle)) {
+          await writePdfToHandle(savedHandle, blob);
+          toast('PDF salvo por cima do catálogo anterior.');
+          return true;
+        }
+      } catch (error) {
+        console.warn('Não foi possível salvar no arquivo já escolhido. Escolha o local novamente.', error);
+      }
+    }
+
     const pickerOptions = {
       suggestedName: fileName,
+      id: 'catalogo-pdf',
       types: [
         {
           description: 'Arquivo PDF',
@@ -1434,16 +1532,26 @@ async function savePdfDocument(pdf) {
     };
 
     try {
-      const handle = await window.showSaveFilePicker({
-        ...pickerOptions,
-        id: 'catalogo-pdf',
-        startIn: 'desktop'
-      });
+      let handle;
 
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      toast('PDF salvo como catálogo.pdf.');
+      try {
+        handle = await window.showSaveFilePicker({
+          ...pickerOptions,
+          startIn: 'desktop'
+        });
+      } catch (error) {
+        if (error?.name === 'AbortError') {
+          toast('Salvamento cancelado.');
+          return false;
+        }
+
+        console.warn('O navegador não aceitou iniciar na Área de Trabalho. Abrindo seletor padrão.', error);
+        handle = await window.showSaveFilePicker(pickerOptions);
+      }
+
+      await writePdfToHandle(handle, blob);
+      await setSavedCatalogFileHandle(handle);
+      toast('PDF salvo como catálogo.pdf. Nas próximas vezes, ele será substituído automaticamente nesse mesmo arquivo.');
       return true;
     } catch (error) {
       if (error?.name === 'AbortError') {
@@ -1451,32 +1559,12 @@ async function savePdfDocument(pdf) {
         return false;
       }
 
-      console.warn('Não foi possível iniciar pela Área de Trabalho. Tentando seletor normal.', error);
-    }
-
-    try {
-      const handle = await window.showSaveFilePicker({
-        ...pickerOptions,
-        id: 'catalogo-pdf'
-      });
-
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      toast('PDF salvo como catálogo.pdf.');
-      return true;
-    } catch (error) {
-      if (error?.name === 'AbortError') {
-        toast('Salvamento cancelado.');
-        return false;
-      }
-
-      console.warn('Não foi possível usar o seletor de arquivo. Usando download padrão.', error);
+      console.warn('Não foi possível usar salvamento direto. Usando download padrão.', error);
     }
   }
 
   pdf.save(fileName);
-  toast('PDF baixado como catálogo.pdf. Para escolher a Área de Trabalho e substituir o arquivo, use Chrome ou Edge.');
+  toast('Seu navegador não permite salvar direto na Área de Trabalho. Use Chrome ou Edge para escolher catálogo.pdf uma vez e substituir nas próximas.');
   return true;
 }
 
