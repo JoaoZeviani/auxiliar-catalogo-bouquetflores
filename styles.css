@@ -700,3 +700,95 @@ textarea,
     justify-content: space-between;
   }
 }
+
+/* Correção de responsividade da aba Aparência do PDF */
+* {
+  box-sizing: border-box;
+}
+
+.settings-form,
+#settingsForm,
+.tab-panel,
+.main-content,
+.content-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.settings-form .form-grid,
+#settingsForm .form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-form label,
+#settingsForm label,
+.settings-form input,
+#settingsForm input,
+.settings-form textarea,
+#settingsForm textarea,
+.settings-form select,
+#settingsForm select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.settings-form textarea,
+#settingsForm textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+@media (max-width: 760px) {
+  .app-shell,
+  .main-content,
+  .content,
+  .tab-panel,
+  .content-card,
+  .settings-form,
+  #settingsForm {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .settings-form,
+  #settingsForm {
+    display: grid;
+    gap: 14px;
+  }
+
+  .settings-form .form-grid,
+  #settingsForm .form-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .settings-form label,
+  #settingsForm label {
+    width: 100%;
+  }
+
+  .settings-form input,
+  #settingsForm input,
+  .settings-form textarea,
+  #settingsForm textarea,
+  .settings-form select,
+  #settingsForm select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .checkbox-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .checkbox-row label {
+    align-items: flex-start;
+    overflow-wrap: anywhere;
+  }
+}

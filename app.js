@@ -1363,25 +1363,53 @@ function pdfFileName() {
   return 'catálogo.pdf';
 }
 
-async function savePdfDocument(pdf) {
+async async function savePdfDocument(pdf) {
   const fileName = pdfFileName();
+  const blob = pdf.output('blob');
 
-  if (window.showSaveFilePicker) {
+  if (window.showSaveFilePicker && window.isSecureContext) {
+    const pickerOptions = {
+      suggestedName: fileName,
+      types: [
+        {
+          description: 'Arquivo PDF',
+          accept: { 'application/pdf': ['.pdf'] }
+        }
+      ],
+      excludeAcceptAllOption: false
+    };
+
     try {
       const handle = await window.showSaveFilePicker({
-        suggestedName: fileName,
-        startIn: 'desktop',
-        types: [
-          {
-            description: 'Arquivo PDF',
-            accept: { 'application/pdf': ['.pdf'] }
-          }
-        ]
+        ...pickerOptions,
+        id: 'catalogo-pdf',
+        startIn: 'desktop'
       });
 
       const writable = await handle.createWritable();
-      await writable.write(pdf.output('blob'));
+      await writable.write(blob);
       await writable.close();
+      toast('PDF salvo como catálogo.pdf.');
+      return true;
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        toast('Salvamento cancelado.');
+        return false;
+      }
+
+      console.warn('Não foi possível iniciar pela Área de Trabalho. Tentando seletor normal.', error);
+    }
+
+    try {
+      const handle = await window.showSaveFilePicker({
+        ...pickerOptions,
+        id: 'catalogo-pdf'
+      });
+
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      toast('PDF salvo como catálogo.pdf.');
       return true;
     } catch (error) {
       if (error?.name === 'AbortError') {
@@ -1394,6 +1422,7 @@ async function savePdfDocument(pdf) {
   }
 
   pdf.save(fileName);
+  toast('PDF baixado como catálogo.pdf. Para escolher a Área de Trabalho e substituir o arquivo, use Chrome ou Edge.');
   return true;
 }
 
@@ -1466,7 +1495,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
       cardW: 100.4,
       cardH: 52,
       categoryH: 12,
-      bottom: state.settings.showPromoFooter ? 258 : 289
+      bottom: state.settings.showPromoFooter ? 256 : 289
     };
 
     let col = 0;
@@ -1815,8 +1844,8 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
 function drawPromoFooter(pdf, promoImage) {
   if (!state.settings.showPromoFooter) return;
 
-  const y = 262;
-  const h = 35;
+  const y = 260;
+  const h = 37;
 
   fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, '#805630', 0.94);
   setDrawHex(pdf, '#F5EBE3');
@@ -1827,10 +1856,10 @@ function drawPromoFooter(pdf, promoImage) {
   pdf.setFontSize(17.2);
   setTextHex(pdf, '#F5EBE3');
   const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);
-  pdf.text(lines, 16, y + 14, { maxWidth: 132, lineHeightFactor: 1.02 });
+  pdf.text(lines, 15, y + 14.2, { maxWidth: 123, lineHeightFactor: 1.03 });
 
   if (promoImage) {
-    addImageContainedRounded(pdf, promoImage, 151, y + 4, 46, 28, 'rodape-promo', 2.2);
+    addImageContainedRounded(pdf, promoImage, 140, y + 3, 62, 31, 'rodape-promo', 2.4);
   }
 }
 
