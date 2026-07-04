@@ -100,8 +100,8 @@ const pageData = {
   dashboard: ['Início', 'Resumo dos produtos e opções do catálogo.'],
   produtos: ['Produtos', 'Cadastre, altere, exclua e controle a disponibilidade.'],
   categorias: ['Categorias', 'Organize a ordem das categorias no PDF.'],
-  imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem promocional.'],
-  aparencia: ['Aparência do PDF', 'Defina informações da capa e o rodapé promocional.']
+  imagens: ['Imagens fixas', 'Cadastre logotipo, foto da capa, ícones e imagem do rodapé.'],
+  aparencia: ['Aparência do PDF', 'Defina informações da capa e o rodapé.']
 };
 
 function toast(message, type = 'ok') {
@@ -1326,7 +1326,7 @@ async function removeWhiteBackground(image, tolerance = 246) {
     ctx.putImageData(data, 0, 0);
     return { dataUrl: canvas.toDataURL('image/png'), width: image.width, height: image.height };
   } catch (error) {
-    console.warn('Não foi possível remover fundo branco da imagem promocional.', error);
+    console.warn('Não foi possível remover fundo branco da imagem do rodapé.', error);
     return image;
   }
 }
@@ -1360,12 +1360,43 @@ function splitLines(pdf, text, maxWidth, maxLines) {
 }
 
 function pdfFileName() {
-  const name = (state.settings.businessName || 'catalogo').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  const date = new Date().toISOString().slice(0, 10);
-  return `${name || 'catalogo'}-${date}.pdf`;
+  return 'catálogo.pdf';
 }
+
+async function savePdfDocument(pdf) {
+  const fileName = pdfFileName();
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        startIn: 'desktop',
+        types: [
+          {
+            description: 'Arquivo PDF',
+            accept: { 'application/pdf': ['.pdf'] }
+          }
+        ]
+      });
+
+      const writable = await handle.createWritable();
+      await writable.write(pdf.output('blob'));
+      await writable.close();
+      return true;
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        toast('Salvamento cancelado.');
+        return false;
+      }
+
+      console.warn('Não foi possível usar o seletor de arquivo. Usando download padrão.', error);
+    }
+  }
+
+  pdf.save(fileName);
+  return true;
+}
+
 
 async function generateCatalogPdf({ onlyAvailable = true } = {}) {
   const button = $('generatePdfBtn');
@@ -1435,7 +1466,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
       cardW: 100.4,
       cardH: 52,
       categoryH: 12,
-      bottom: state.settings.showPromoFooter ? 266 : 289
+      bottom: state.settings.showPromoFooter ? 258 : 289
     };
 
     let col = 0;
@@ -1475,7 +1506,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
       setTextHex(pdf, '#F5EBE3');
       pdf.text('Nenhum produto disponível para o PDF.', 105, 130, { align: 'center' });
       drawPromoFooter(pdf, promoImage);
-      pdf.save(pdfFileName());
+      if (!(await savePdfDocument(pdf))) return;
       return;
     }
 
@@ -1510,7 +1541,7 @@ drawCover(pdf, { coverImage, logoImage, iconImage, whatsappIcon, deliveryIcon, l
     }
 
     drawPromoFooter(pdf, promoImage);
-    pdf.save(pdfFileName());
+    if (!(await savePdfDocument(pdf))) return;
     toast('PDF gerado com sucesso.');
   } catch (error) {
     console.error(error);
@@ -1784,22 +1815,22 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
 function drawPromoFooter(pdf, promoImage) {
   if (!state.settings.showPromoFooter) return;
 
-  const y = 270;
-  const h = 27;
+  const y = 262;
+  const h = 35;
 
   fillRoundedRectWithOpacity(pdf, 0, y, 210, h, 0, 0, '#805630', 0.94);
   setDrawHex(pdf, '#F5EBE3');
-  pdf.setLineWidth(0.32);
-  pdf.line(10, y + 1.5, 200, y + 1.5);
+  pdf.setLineWidth(0.34);
+  pdf.line(10, y + 2, 200, y + 2);
 
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(15.2);
+  pdf.setFontSize(17.2);
   setTextHex(pdf, '#F5EBE3');
   const lines = String(state.settings.promoFooter || DEFAULT_SETTINGS.promoFooter).split('\n').slice(0, 2);
-  pdf.text(lines, 17, y + 10.8, { maxWidth: 126, lineHeightFactor: 1.03 });
+  pdf.text(lines, 16, y + 14, { maxWidth: 132, lineHeightFactor: 1.02 });
 
   if (promoImage) {
-    addImageContainedRounded(pdf, promoImage, 148, y + 1.5, 48, 24, 'rodape-promo', 2.2);
+    addImageContainedRounded(pdf, promoImage, 151, y + 4, 46, 28, 'rodape-promo', 2.2);
   }
 }
 
