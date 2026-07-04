@@ -211,45 +211,99 @@ function showApp(show) {
 }
 
 function bindAuth() {
-  $('togglePassword').addEventListener('click', () => {
-    const input = $('passwordInput');
-    input.type = input.type === 'password' ? 'text' : 'password';
-    $('togglePassword').textContent = input.type === 'password' ? 'Mostrar' : 'Ocultar';
+  const loginForm = $('loginForm');
+  const passwordInput = $('passwordInput');
+  const togglePassword = $('togglePassword');
+  const logoutBtn = $('logoutBtn');
+
+  if (!loginForm || !passwordInput || !togglePassword) {
+    console.error('Campos de login não encontrados no HTML.');
+    return;
+  }
+
+  togglePassword.addEventListener('click', () => {
+    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    togglePassword.textContent = passwordInput.type === 'password' ? 'Mostrar' : 'Ocultar';
   });
 
-  $('loginForm').addEventListener('submit', async (event) => {
+  loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+
     if (!state.supabaseReady) {
       toast('Configure o Supabase antes de entrar.', 'error');
       return;
     }
-    const password = $('passwordInput').value.trim();
+
+    const password = passwordInput.value.trim();
+    const submitButton = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitButton?.textContent || 'Entrar';
+
+    if (!password) {
+      toast('Digite a senha.', 'error');
+      return;
+    }
+
     try {
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Entrando...';
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email: ADMIN_EMAIL,
         password
       });
+
       if (error) throw error;
-      $('passwordInput').value = '';
+
+      passwordInput.value = '';
+      showApp(true);
+
+      startRealtimeListeners().catch((loadError) => {
+        console.error(loadError);
+        toast('Login feito, mas houve erro ao carregar os dados. Atualize a página.', 'error');
+      });
     } catch (error) {
       console.error(error);
       toast('Senha incorreta ou usuário do Supabase não criado.', 'error');
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
     }
   });
 
-  $('logoutBtn').addEventListener('click', () => supabase.auth.signOut());
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => supabase.auth.signOut());
+  }
 
   if (state.supabaseReady) {
-    supabase.auth.getSession().then(({ data }) => {
-      const hasSession = !!data.session?.user;
-      showApp(hasSession);
-      if (hasSession) startRealtimeListeners();
-    });
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        const hasSession = !!data.session?.user;
+        showApp(hasSession);
+        if (hasSession) {
+          startRealtimeListeners().catch((error) => {
+            console.error(error);
+            toast('Sessão aberta, mas houve erro ao carregar os dados.', 'error');
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        showApp(false);
+      });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       const hasSession = !!session?.user;
       showApp(hasSession);
-      if (hasSession) startRealtimeListeners();
+      if (hasSession) {
+        startRealtimeListeners().catch((error) => {
+          console.error(error);
+          toast('Login feito, mas houve erro ao carregar os dados.', 'error');
+        });
+      }
     });
   }
 }
@@ -1363,7 +1417,7 @@ function pdfFileName() {
   return 'catálogo.pdf';
 }
 
-async async function savePdfDocument(pdf) {
+async function savePdfDocument(pdf) {
   const fileName = pdfFileName();
   const blob = pdf.output('blob');
 
@@ -1896,6 +1950,15 @@ async function registerServiceWorker() {
     console.warn('Não foi possível registrar o service worker.', error);
   }
 }
+
+
+window.addEventListener('error', (event) => {
+  console.error('Erro global no app:', event.error || event.message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Promessa rejeitada no app:', event.reason);
+});
 
 function safeInit(label, callback) {
   try {
