@@ -1417,7 +1417,6 @@ function pdfFileName() {
   return 'catálogo.pdf';
 }
 
-async 
 function canUseFileSystemSave() {
   return Boolean(window.showSaveFilePicker && window.indexedDB && window.isSecureContext);
 }
