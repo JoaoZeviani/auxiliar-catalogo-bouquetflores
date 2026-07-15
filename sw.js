@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auxiliar-catalogos-runtime-v79';
+const CACHE_NAME = 'auxiliar-catalogos-runtime-v81';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();

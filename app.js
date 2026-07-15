@@ -5,6 +5,10 @@ const STORAGE_BUCKET = 'catalogo-imagens';
 const STORAGE_LIMIT_BYTES = 500 * 1024 * 1024;
 const APP_ICON_URL = './assets/icons/app-icon-192.png';
 
+const PRODUCT_NAME_MAX_LENGTH = 50;
+const PRODUCT_DESCRIPTION_MAX_LENGTH = 120;
+
+
 const DEFAULT_CATEGORY_COLORS = [
   '#4D1225',
   '#805630',
@@ -435,7 +439,34 @@ async function loadAssets() {
   state.assets = normalizeAssets(data.dados || {});
 }
 
+
+function clampTextForPdfInput(value, maxLength) {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) return normalized;
+
+  const sliced = normalized.slice(0, maxLength + 1);
+  const lastSpace = sliced.lastIndexOf(' ');
+  const cutAt = lastSpace > Math.floor(maxLength * 0.65) ? lastSpace : maxLength;
+  return normalized.slice(0, cutAt).trim();
+}
+
+function applyProductTextLimits() {
+  const nameInput = $('productName');
+  const descriptionInput = $('productDescription');
+
+  if (nameInput) {
+    nameInput.maxLength = PRODUCT_NAME_MAX_LENGTH;
+    nameInput.setAttribute('maxlength', String(PRODUCT_NAME_MAX_LENGTH));
+  }
+
+  if (descriptionInput) {
+    descriptionInput.maxLength = PRODUCT_DESCRIPTION_MAX_LENGTH;
+    descriptionInput.setAttribute('maxlength', String(PRODUCT_DESCRIPTION_MAX_LENGTH));
+  }
+}
+
 function bindProductUi() {
+  applyProductTextLimits();
   $('newProductBtn').addEventListener('click', () => openProductDialog());
   $('closeProductDialog').addEventListener('click', () => $('productDialog').close());
   $('cancelProductBtn').addEventListener('click', () => $('productDialog').close());
@@ -453,9 +484,9 @@ function openProductDialog(product = null) {
   state.editingProduct = product;
   $('productDialogTitle').textContent = product ? 'Alterar produto' : 'Novo produto';
   $('productId').value = product?.id || '';
-  $('productName').value = product?.nome || '';
+  $('productName').value = clampTextForPdfInput(product?.nome || '', PRODUCT_NAME_MAX_LENGTH);
   $('productPrice').value = product?.preco ?? '';
-  $('productDescription').value = product?.descricao || '';
+  $('productDescription').value = clampTextForPdfInput(product?.descricao || '', PRODUCT_DESCRIPTION_MAX_LENGTH);
   $('productCategory').value = product?.categoriaId || state.categories[0]?.id || '';
   $('productAvailable').checked = product?.disponivel ?? true;
   $('productImage').value = '';
@@ -521,9 +552,9 @@ async function saveProduct() {
   const file = $('productImage').files[0];
   const old = state.editingProduct;
   const payload = {
-    nome: $('productName').value.trim(),
+    nome: clampTextForPdfInput($('productName').value, PRODUCT_NAME_MAX_LENGTH),
     preco: Number($('productPrice').value || 0),
-    descricao: $('productDescription').value.trim(),
+    descricao: clampTextForPdfInput($('productDescription').value, PRODUCT_DESCRIPTION_MAX_LENGTH),
     categoria_id: $('productCategory').value,
     disponivel: $('productAvailable').checked,
     atualizado_em: nowIso()
@@ -1408,9 +1439,7 @@ async function fitImageToBox(dataUrl, width = 1000, height = 760, quality = 0.9,
 function splitLines(pdf, text, maxWidth, maxLines) {
   const lines = pdf.splitTextToSize(String(text || ''), maxWidth);
   if (lines.length <= maxLines) return lines;
-  const out = lines.slice(0, maxLines);
-  out[maxLines - 1] = out[maxLines - 1].replace(/\s+\S*$/, '') + '...';
-  return out;
+  return lines.slice(0, maxLines);
 }
 
 function pdfFileName() {
@@ -1939,12 +1968,12 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');
 
   const padding = 1.5;
-  const imageW = 46;
+  const imageW = 44;
   const imageH = h - 3;
   const imageX = x + w - imageW - padding;
   const imageY = y + 1.5;
   const textX = x + 2.6;
-  const textW = Math.max(40, imageX - textX - 1.4);
+  const textW = Math.max(42, imageX - textX - 1.4);
 
   if (image) {
     fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#FFFFFF', 0.74);
@@ -1953,12 +1982,13 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
     drawSimpleFlower(pdf, imageX + imageW / 2, imageY + imageH / 2, 0.58, marsala, bronze);
   }
 
-  const descricao = String(product.descricao || '').trim();
+  const nome = clampTextForPdfInput(product.nome, PRODUCT_NAME_MAX_LENGTH);
+  const descricao = clampTextForPdfInput(product.descricao, PRODUCT_DESCRIPTION_MAX_LENGTH);
   const hasDescricao = descricao.length > 0;
 
-  const titleFontSize = hasDescricao ? 12.7 : 14.2;
+  const titleFontSize = hasDescricao ? 12.3 : 13.8;
   const titleLineHeight = titleFontSize * 0.3528 * 1.0;
-  const descFontSize = 8.35;
+  const descFontSize = 8.15;
   const descLineHeight = descFontSize * 0.3528 * 0.98;
 
   setTextHex(pdf, textColor);
@@ -1966,13 +1996,13 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   pdf.setFontSize(titleFontSize);
 
   const nameMaxLines = hasDescricao ? 2 : 3;
-  const nameLines = splitLines(pdf, product.nome, textW, nameMaxLines);
-  const nameY = hasDescricao ? y + 7.3 : y + 13.5;
+  const nameLines = splitLines(pdf, nome, textW, nameMaxLines);
+  const nameY = hasDescricao ? y + 7.1 : y + 13.4;
   pdf.text(nameLines, textX, nameY, { lineHeightFactor: 1.0 });
 
   if (hasDescricao) {
     const descY = nameY + nameLines.length * titleLineHeight + 1.8;
-    const priceLineY = y + h - 13.6;
+    const priceLineY = y + h - 13.4;
     const availableDescHeight = Math.max(descLineHeight * 2, priceLineY - descY - 1.2);
     const maxDescLines = Math.max(3, Math.min(6, Math.floor(availableDescHeight / descLineHeight)));
 
@@ -1983,8 +2013,8 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
     pdf.text(descLines, textX, descY, { lineHeightFactor: 0.98 });
   }
 
-  const lineY = hasDescricao ? y + h - 12.4 : y + 25.2;
-  const priceY = hasDescricao ? y + h - 4.7 : y + 33.0;
+  const lineY = hasDescricao ? y + h - 12.2 : y + 25.2;
+  const priceY = hasDescricao ? y + h - 4.6 : y + 33.0;
 
   setDrawHex(pdf, bronze);
   pdf.setLineWidth(0.22);
