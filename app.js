@@ -1166,7 +1166,7 @@ function renderStorageUsage({ loading = false } = {}) {
       ? 'Estimativa parcial: algumas imagens não retornaram tamanho.'
       : 'Estimativa feita pelas imagens cadastradas no Storage. Fundos fixos do app não entram nessa conta.';
 
-  if ($('storageNote')) $('storageNote').textContent = note;
+  if ($('storageNote')) if ($('storageNote')) $('storageNote').textContent = note;
 }
 
 let storageEstimateRun = 0;
