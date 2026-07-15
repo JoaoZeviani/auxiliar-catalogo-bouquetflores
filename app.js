@@ -454,15 +454,29 @@ function applyProductTextLimits() {
   const nameInput = $('productName');
   const descriptionInput = $('productDescription');
 
-  if (nameInput) {
-    nameInput.maxLength = PRODUCT_NAME_MAX_LENGTH;
-    nameInput.setAttribute('maxlength', String(PRODUCT_NAME_MAX_LENGTH));
+  function bindLimitWarning(input, warningId, maxLength) {
+    if (!input) return;
+
+    input.maxLength = maxLength;
+    input.setAttribute('maxlength', String(maxLength));
+
+    const warning = $(warningId);
+    const updateWarning = () => {
+      if (!warning) return;
+      warning.hidden = input.value.length < maxLength;
+    };
+
+    updateWarning();
+
+    if (input.dataset.limitWarningBound === 'true') return;
+    input.dataset.limitWarningBound = 'true';
+
+    input.addEventListener('input', updateWarning);
+    input.addEventListener('change', updateWarning);
   }
 
-  if (descriptionInput) {
-    descriptionInput.maxLength = PRODUCT_DESCRIPTION_MAX_LENGTH;
-    descriptionInput.setAttribute('maxlength', String(PRODUCT_DESCRIPTION_MAX_LENGTH));
-  }
+  bindLimitWarning(nameInput, 'productNameLimitWarning', PRODUCT_NAME_MAX_LENGTH);
+  bindLimitWarning(descriptionInput, 'productDescriptionLimitWarning', PRODUCT_DESCRIPTION_MAX_LENGTH);
 }
 
 function bindProductUi() {
@@ -491,6 +505,7 @@ function openProductDialog(product = null) {
   $('productAvailable').checked = product?.disponivel ?? true;
   $('productImage').value = '';
   renderProductImagePreview(product?.imagemUrl || '');
+  applyProductTextLimits();
   $('productDialog').showModal();
 }
 

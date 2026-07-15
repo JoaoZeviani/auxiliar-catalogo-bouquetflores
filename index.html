@@ -8,7 +8,7 @@
   <link rel="icon" href="./assets/icons/favicon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="./assets/icons/favicon-32.png" />
   <link rel="apple-touch-icon" href="./assets/icons/app-icon-180.png" />
-  <link rel="stylesheet" href="./styles.css?v=limite-nome-50-20260704" />
+  <link rel="stylesheet" href="./styles.css?v=aviso-limite-produto-20260704" />
   <link rel="manifest" href="./manifest.json" />
 </head>
 <body>
@@ -211,16 +211,16 @@
       <input id="productId" type="hidden" />
       <div class="form-grid">
         <label>Nome do produto
+          <small id="productNameLimitWarning" class="field-note" hidden>Limite de 50 caracteres atingido.</small>
           <input id="productName" type="text" maxlength="50" required />
-          <small class="field-note">Máximo de 50 caracteres para caber no PDF sem reticências.</small>
         </label>
         <label>Preço
           <input id="productPrice" type="number" min="0" step="0.01" required />
         </label>
       </div>
       <label>Descrição
+        <small id="productDescriptionLimitWarning" class="field-note" hidden>Limite de 120 caracteres atingido.</small>
         <textarea id="productDescription" rows="4" maxlength="120"></textarea>
-        <small class="field-note">Máximo de 120 caracteres para caber no PDF sem reticências.</small>
       </label>
       <div class="form-grid">
         <label>Categoria
@@ -245,6 +245,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script type="module" src="./app.js?v=limite-nome-50-20260704"></script>
+  <script type="module" src="./app.js?v=aviso-limite-produto-20260704"></script>
 </body>
 </html>
