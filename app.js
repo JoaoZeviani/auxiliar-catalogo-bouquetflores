@@ -1939,12 +1939,12 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   pdf.roundedRect(x, y, w, h, 3.2, 3.2, 'S');
 
   const padding = 1.5;
-  const imageW = 50;
+  const imageW = 46;
   const imageH = h - 3;
   const imageX = x + w - imageW - padding;
   const imageY = y + 1.5;
-  const textX = x + 2.4;
-  const textW = Math.max(34, imageX - textX - 1.2);
+  const textX = x + 2.6;
+  const textW = Math.max(40, imageX - textX - 1.4);
 
   if (image) {
     fillRoundedRectWithOpacity(pdf, imageX, imageY, imageW, imageH, 3.2, 3.2, '#FFFFFF', 0.74);
@@ -1956,25 +1956,39 @@ function drawProductCard(pdf, product, x, y, w, h, image) {
   const descricao = String(product.descricao || '').trim();
   const hasDescricao = descricao.length > 0;
 
+  const titleFontSize = hasDescricao ? 12.7 : 14.2;
+  const titleLineHeight = titleFontSize * 0.3528 * 1.0;
+  const descFontSize = 8.35;
+  const descLineHeight = descFontSize * 0.3528 * 0.98;
+
   setTextHex(pdf, textColor);
   setPdfFont(pdf, 'title', 'bold');
-  pdf.setFontSize(hasDescricao ? 13.5 : 14.2);
-  const nameLines = splitLines(pdf, product.nome, textW, hasDescricao ? 3 : 2);
-  pdf.text(nameLines, textX, hasDescricao ? y + 8.2 : y + 15.5, { lineHeightFactor: 1.03 });
+  pdf.setFontSize(titleFontSize);
+
+  const nameMaxLines = hasDescricao ? 2 : 3;
+  const nameLines = splitLines(pdf, product.nome, textW, nameMaxLines);
+  const nameY = hasDescricao ? y + 7.3 : y + 13.5;
+  pdf.text(nameLines, textX, nameY, { lineHeightFactor: 1.0 });
 
   if (hasDescricao) {
+    const descY = nameY + nameLines.length * titleLineHeight + 1.8;
+    const priceLineY = y + h - 13.6;
+    const availableDescHeight = Math.max(descLineHeight * 2, priceLineY - descY - 1.2);
+    const maxDescLines = Math.max(3, Math.min(6, Math.floor(availableDescHeight / descLineHeight)));
+
     setTextHex(pdf, textColor);
     setPdfFont(pdf, 'body', 'normal');
-    pdf.setFontSize(8.8);
-    const descLines = splitLines(pdf, descricao, textW, 3);
-    pdf.text(descLines, textX, y + 24.2, { lineHeightFactor: 1.06 });
+    pdf.setFontSize(descFontSize);
+    const descLines = splitLines(pdf, descricao, textW, maxDescLines);
+    pdf.text(descLines, textX, descY, { lineHeightFactor: 0.98 });
   }
 
-  const lineY = hasDescricao ? y + h - 15 : y + 24.8;
-  const priceY = hasDescricao ? y + h - 5.5 : y + 32.4;
+  const lineY = hasDescricao ? y + h - 12.4 : y + 25.2;
+  const priceY = hasDescricao ? y + h - 4.7 : y + 33.0;
+
   setDrawHex(pdf, bronze);
   pdf.setLineWidth(0.22);
-  pdf.line(textX, lineY, textX + Math.min(27, textW), lineY);
+  pdf.line(textX, lineY, textX + Math.min(34, textW), lineY);
 
   setTextHex(pdf, marsala);
   setPdfFont(pdf, 'price', 'bold');
